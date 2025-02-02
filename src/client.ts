@@ -2,7 +2,7 @@ import { AsyncEventEmitter } from '@vladfrangu/async_event_emitter';
 import type { APIApplication, APIUser, OAuth2Scopes, Snowflake } from 'discord-api-types/v10';
 import { randomUUID } from 'node:crypto';
 import { clearTimeout, setTimeout } from 'node:timers';
-import type { MappedRPCCommandsArgs, RPCMessage } from './constants';
+import type { MappedRPCCommandsArgs, RPCCallableCommands, RPCMessage } from './constants';
 import { RPCCommands, RPCEvents, RelationshipType } from './constants';
 import { IPCTransport } from './ipc';
 import { getPid } from './util';
@@ -156,9 +156,13 @@ export class RPCClient extends AsyncEventEmitter {
    * @param args - Arguments
    * @param evt - Event
    */
-  async #request<Cmd extends RPCCommands = RPCCommands>(cmd: Cmd, args: MappedRPCCommandsArgs[Cmd], evt?: RPCEvents) {
+  async #request<Cmd extends RPCCallableCommands = RPCCallableCommands>(cmd: Cmd, args: MappedRPCCommandsArgs[Cmd], evt?: RPCEvents) {
     return new Promise((resolve, reject) => {
       const nonce = randomUUID();
+      const payload: { cmd: Cmd, args: MappedRPCCommandsArgs[Cmd], nonce: string, evt?: RPCEvents } = { cmd, args, nonce };
+      if (cmd === RPCCommands.Subscribe || cmd === RPCCommands.Unsubscribe) {
+        payload.evt = evt!;
+      }
       this.transport.send({ cmd, args, evt, nonce });
       this.#expected_nonces.set(nonce, { resolve, reject });
     });
@@ -485,7 +489,7 @@ export class RPCClient extends AsyncEventEmitter {
    * @param {number} [pid] The application's process ID. Defaults to the executing process' PID.
    * @returns {Promise}
    */
-  public async setActivity(args: object = {}, pid: number = getPid()): Promise<any> {
+  public async setActivity(args: object = {}, pid: number | null = getPid()): Promise<any> {
     let timestamps;
     let assets;
     let party;
@@ -540,7 +544,7 @@ export class RPCClient extends AsyncEventEmitter {
     }
 
     return this.#request(RPCCommands.SetActivity, {
-      pid,
+      pid: pid ?? 0,
       activity: {
         state: args.state,
         details: args.details,
@@ -561,9 +565,9 @@ export class RPCClient extends AsyncEventEmitter {
    * @param {number} [pid] The application's process ID. Defaults to the executing process' PID.
    * @returns {Promise}
    */
-  public async clearActivity(pid: number = getPid()): Promise<any> {
+  public async clearActivity(pid: number | null = getPid()): Promise<any> {
     return this.#request(RPCCommands.SetActivity, {
-      pid,
+      pid: pid ?? 0,
     });
   }
 
@@ -586,7 +590,7 @@ export class RPCClient extends AsyncEventEmitter {
    * @returns {Promise}
    */
   public async sendJoinRequest(user: User): Promise<any> {
-    return this.#request(RPCCommands.CloseActivityJoinRequest, {
+    return this.#request(RPCCommands.SendActivityJoinRequest, {
       user_id: user.id || user,
     });
   }
@@ -598,7 +602,7 @@ export class RPCClient extends AsyncEventEmitter {
    * @returns {Promise}
    */
   public async closeJoinRequest(user: User): Promise<any> {
-    return this.#request(RPCCommands.CloseActivityJoinRequest, {
+    return this.#request(RPCCommands.CloseActivityRequest, {
       user_id: user.id || user,
     });
   }

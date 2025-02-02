@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
 import type { Snowflake } from "discord-api-types/globals";
-import type { OAuth2Scopes, APIUser, APIPartialGuild, APIMessage, ChannelType, APIVoiceState, APIPartialChannel, GatewayActivity } from "discord-api-types/v10";
+import type { APIMessage, APIPartialChannel, APIPartialGuild, APIUser, APIVoiceState, ChannelType, GatewayActivity, OAuth2Scopes } from "discord-api-types/v10";
 
 export const RPCVersion = '1';
 
@@ -630,6 +630,11 @@ export enum RPCCommands {
 	 */
 	SendActivityJoinInvite = 'SEND_ACTIVITY_JOIN_INVITE',
 	/**
+	 * Request to join the game the user is playing
+	 * @unstable
+	 */
+	SendActivityJoinRequest = 'SEND_ACTIVITY_JOIN_REQUEST',
+	/**
 	 * @unstable
 	 */
 	SendToLobby = 'SEND_TO_LOBBY',
@@ -1041,7 +1046,7 @@ export interface RPCSetActivityArgs {
 	/**
 	 * the rich presence to assign to the user
 	 */
-	activity: Omit<GatewayActivity, 'name' | 'state' | 'type' | 'url'>;
+	activity?: Omit<GatewayActivity, 'name' | 'type' | 'url'>;
 	/**
 	 * the application's process id
 	 */
@@ -1438,6 +1443,21 @@ export interface RPCSendActivityJoinInviteResultData {}
 export interface RPCSendActivityJoinInviteArgs {
 	/**
 	 * the id of the requesting user
+	 */
+	user_id: Snowflake;
+}
+
+/**
+ * @unstable
+ */
+export interface RPCSendActivityJoinRequestResultData {}
+
+/**
+ * @unstable
+ */
+export interface RPCSendActivityJoinRequestArgs {
+	/**
+	 * the id of the user to request to join
 	 */
 	user_id: Snowflake;
 }
@@ -3517,6 +3537,7 @@ export type RPCMessagePayload =
     [RPCCommands.Overlay]: RPCOverlayArgs;
     [RPCCommands.SearchLobbies]: RPCSearchLobbiesArgs;
     [RPCCommands.SendActivityJoinInvite]: RPCSendActivityJoinInviteArgs;
+		[RPCCommands.SendActivityJoinRequest]: RPCSendActivityJoinRequestArgs;
     [RPCCommands.SendToLobby]: RPCSendToLobbyArgs;
     [RPCCommands.SetCertifiedDevices]: RPCSetCertifiedDevicesArgs;
     [RPCCommands.SetOverlayLocked]: RPCSetOverlayLockedArgs;
@@ -3529,6 +3550,8 @@ export type RPCMessagePayload =
     [RPCCommands.UpdateLobbyMember]: RPCUpdateLobbyMemberArgs;
     [RPCCommands.ValidateApplication]: RPCValidateApplicationArgs;
   }
+
+	export type RPCCallableCommands = Exclude<RPCCommands, RPCCommands.Dispatch>;
   
   export interface MappedRPCSubscribeEventsArgs {
     [RPCEvents.ActivityInvite]: RPCSubscribeActivityInviteArgs;
