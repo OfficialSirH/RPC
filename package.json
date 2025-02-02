@@ -1,58 +1,85 @@
 {
-  "name": "discord-rpc",
-  "version": "4.0.1",
-  "description": "A simple RPC client for Discord",
-  "keywords": [
-    "discord",
-    "rpc",
-    "rich presence",
-    "remote procedural call"
-  ],
-  "main": "src/index.js",
-  "jsdelivr": "browser.js",
-  "unpkg": "browser.js",
-  "author": "snek <me@gus.host>",
-  "license": "MIT",
-  "homepage": "https://github.com/discordjs/RPC#readme",
-  "bugs": {
-    "url": "https://github.com/discordjs/RPC/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/discordjs/RPC.git"
-  },
-  "scripts": {
-    "lint": "eslint src test --ext=js",
-    "docs": "mkdir -p docs-out && docgen --source src --output docs-out/master.json --jsdoc jsdoc.json --custom docgen.json",
-    "example": "electron example/main.js",
-    "build:browser": "webpack-cli",
-    "prepublishOnly": "npm run lint && npm run build:browser"
-  },
-  "dependencies": {
-    "node-fetch": "^2.6.1",
-    "ws": "^7.3.1"
-  },
-  "optionalDependencies": {
-    "register-scheme": "github:devsnek/node-register-scheme"
-  },
-  "devDependencies": {
-    "babel-eslint": "^10.0.3",
-    "discord.js-docgen": "github:discordjs/docgen",
-    "electron": "^7.1.9",
-    "eslint": "^6.1.0",
-    "eslint-config-airbnb-base": "14.0.0",
-    "eslint-plugin-import": "^2.18.2",
-    "jsdoc-strip-async-await": "^0.1.0",
-    "webpack": "^4.40.0",
-    "webpack-cli": "^3.3.8"
-  },
-  "browser": {
-    "net": false,
-    "ws": false,
-    "uws": false,
-    "erlpack": false,
-    "electron": false,
-    "register-scheme": false,
-    "./src/transports/IPC.js": false
-  }
+	"$schema": "https://json.schemastore.org/package.json",
+	"name": "@discordjs/rpc",
+	"version": "0.1.0",
+	"description": "A simple RPC client for Discord",
+	"scripts": {
+		"build": "tsc --noEmit && tsup",
+		"build:docs": "tsc -p tsconfig.docs.json",
+		"test": "vitest run",
+		"lint": "prettier --check . && cross-env TIMING=1 eslint --format=pretty src",
+		"format": "prettier --write . && cross-env TIMING=1 eslint --fix --format=pretty src",
+		"fmt": "pnpm run format",
+		"docs": "pnpm run build:docs && api-extractor run --local",
+		"prepack": "pnpm run build && pnpm run lint",
+		"changelog": "git cliff --prepend ./CHANGELOG.md -u -c ./cliff.toml -r ../../ --include-path 'packages/rpc/*'",
+		"release": "cliff-jumper"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"require": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"import": {
+				"types": "./dist/index.d.mts",
+				"default": "./dist/index.mjs"
+			}
+		}
+	},
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"directories": {
+		"lib": "src",
+		"test": "__tests__"
+	},
+	"files": [
+		"dist"
+	],
+	"contributors": [
+		"Crawl <icrawltogo@gmail.com>",
+		"SpaceEEC <spaceeec@yahoo.com>",
+		"Vlad Frangu <me@vladfrangu.dev>",
+		"Aura Román <kyradiscord@gmail.com>"
+	],
+	"license": "Apache-2.0",
+	"keywords": [],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/discordjs/RPC.git"
+	},
+	"bugs": {
+		"url": "https://github.com/discordjs/RPC/issues"
+	},
+	"homepage": "https://discord.js.org",
+	"funding": "https://github.com/discordjs/RPC?sponsor",
+	"dependencies": {
+		"@discordjs/rest": "^2.4.2",
+		"@vladfrangu/async_event_emitter": "^2.4.6",
+		"discord-api-types": "^0.37.117"
+	},
+	"devDependencies": {
+		"@favware/cliff-jumper": "^4.1.0",
+		"@types/node": "^22.10.2",
+		"@vitest/coverage-v8": "^2.1.8",
+		"cross-env": "^7.0.3",
+		"esbuild-plugin-version-injector": "^1.2.1",
+		"eslint": "^8.57.1",
+		"eslint-config-neon": "^0.1.62",
+		"eslint-formatter-pretty": "^6.0.1",
+		"prettier": "^3.4.2",
+		"tsup": "^8.3.5",
+		"turbo": "^2.3.3",
+		"typescript": "~5.5.4",
+		"vitest": "^2.1.8"
+	},
+	"engines": {
+		"node": ">=22"
+	},
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	}
 }
