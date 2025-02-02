@@ -1,12 +1,11 @@
-import { randomUUID } from 'node:crypto';
-import type { Channel } from 'node:diagnostics_channel';
-import { setTimeout, clearTimeout } from 'node:timers';
 import { AsyncEventEmitter } from '@vladfrangu/async_event_emitter';
 import type { APIApplication, APIUser, OAuth2Scopes, Snowflake } from 'discord-api-types/v10';
+import { randomUUID } from 'node:crypto';
+import { clearTimeout, setTimeout } from 'node:timers';
 import type { MappedRPCCommandsArgs, RPCMessage } from './constants';
 import { RPCCommands, RPCEvents, RelationshipType } from './constants';
 import { IPCTransport } from './ipc';
-import  { getPid } from './util';
+import { getPid } from './util';
 
 export interface RPCLoginOptions {
 	accessToken: string;
@@ -210,7 +209,7 @@ export class RPCClient extends AsyncEventEmitter {
       rpcToken = body.rpc_token;
     }
 
-    const { code } = await this.#request('AUTHORIZE', {
+    const { code } = await this.#request(RPCCommands.Authorize, {
       scopes,
       client_id: this.clientId,
       prompt,
@@ -238,7 +237,7 @@ export class RPCClient extends AsyncEventEmitter {
    * @private
    */
   async authenticate(accessToken: string): Promise<any> {
-    return this.#request('AUTHENTICATE', { access_token: accessToken })
+    return this.#request(RPCCommands.Authenticate, { access_token: accessToken })
       .then(({ application, user }) => {
         this.accessToken = accessToken;
         this.application = application;

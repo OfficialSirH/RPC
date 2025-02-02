@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json.schemastore.org/package.json",
-	"name": "@discordjs/rpc",
+	"name": "discord-rpc",
 	"version": "0.1.0",
 	"description": "A simple RPC client for Discord",
 	"scripts": {
@@ -42,9 +42,10 @@
 		"Crawl <icrawltogo@gmail.com>",
 		"SpaceEEC <spaceeec@yahoo.com>",
 		"Vlad Frangu <me@vladfrangu.dev>",
-		"Aura Román <kyradiscord@gmail.com>"
+		"Aura Román <kyradiscord@gmail.com>",
+		"snek <me@gus.host>"
 	],
-	"license": "Apache-2.0",
+	"license": "MIT",
 	"keywords": [],
 	"repository": {
 		"type": "git",
@@ -62,7 +63,7 @@
 	},
 	"devDependencies": {
 		"@favware/cliff-jumper": "^4.1.0",
-		"@types/node": "^22.10.2",
+		"@types/node": "22.12.0",
 		"@vitest/coverage-v8": "^2.1.8",
 		"cross-env": "^7.0.3",
 		"esbuild-plugin-version-injector": "^1.2.1",
@@ -76,7 +77,7 @@
 		"vitest": "^2.1.8"
 	},
 	"engines": {
-		"node": ">=22"
+		"node": ">=22.12.0"
 	},
 	"publishConfig": {
 		"access": "public",
