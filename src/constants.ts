@@ -1,9 +1,17 @@
- 
 /* eslint-disable tsdoc/syntax */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import type { Snowflake } from "discord-api-types/globals";
-import type { APIMessage, APIPartialChannel, APIPartialGuild, APIUser, APIVoiceState, ChannelType, GatewayActivity, OAuth2Scopes } from "discord-api-types/v10";
+import type { Snowflake } from 'discord-api-types/globals';
+import type {
+	APIMessage,
+	APIPartialChannel,
+	APIPartialGuild,
+	APIUser,
+	APIVoiceState,
+	ChannelType,
+	GatewayActivity,
+	OAuth2Scopes,
+} from 'discord-api-types/v10';
 
 export const RPCVersion = '1';
 
@@ -87,9 +95,8 @@ export interface BaseRPCDevice<Type extends RPCDeviceType> {
 /**
  * https://discord.com/developers/docs/topics/rpc#setcertifieddevices-device-object
  */
-export type RPCDevice<Type extends RPCDeviceType = RPCDeviceType> =
-	Type extends RPCDeviceType.AudioInput ?
-		BaseRPCDevice<Type> & {
+export type RPCDevice<Type extends RPCDeviceType = RPCDeviceType> = Type extends RPCDeviceType.AudioInput
+	? BaseRPCDevice<Type> & {
 			/**
 			 * if the device's native automatic gain control is enabled
 			 */
@@ -107,7 +114,7 @@ export type RPCDevice<Type extends RPCDeviceType = RPCDeviceType> =
 			 */
 			noise_suppression: boolean;
 		}
-	:	BaseRPCDevice<Type>;
+	: BaseRPCDevice<Type>;
 
 export interface RPCVoiceAvailableDevice {
 	/**
@@ -247,7 +254,7 @@ export enum VoiceConnectionStates {
 	/**
 	 * TCP connected, Voice disconnected
 	 */
-	VoiceDisconnected = 'VOICE_DISCONNECTED'
+	VoiceDisconnected = 'VOICE_DISCONNECTED',
 }
 
 /**
@@ -441,7 +448,6 @@ export enum RPCCloseEventCodes {
 	 */
 	InvalidEncoding,
 }
-
 
 /**
  * https://discord.com/developers/docs/topics/rpc#commands-and-events-rpc-commands
@@ -1016,7 +1022,7 @@ export interface RPCGetVoiceSettingsResultData {
 	 */
 	silence_warning: boolean;
 }
- 
+
 export interface RPCGetVoiceSettingsArgs {}
 
 /**
@@ -1037,7 +1043,6 @@ export interface RPCSelectTextChannelArgs {
 	timeout?: number;
 }
 
- 
 export interface RPCSetActivityResultData {}
 /**
  * https://discord.com/developers/docs/topics/rpc#setactivity-set-activity-argument-structure
@@ -1670,58 +1675,53 @@ export enum RPCEvents {
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeActivityInviteArgs {}
 
- 
 export interface RPCSubscribeActivityJoinArgs {}
 
- 
 export interface RPCSubscribeActivityJoinRequestArgs {}
 
- 
 export interface RPCSubscribeActivitySpectateArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeCaptureShortcutChangeArgs {}
 
- 
 export interface RPCSubscribeChannelCreateArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeCurrentUserUpdateArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeEntitlementCreateArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeEntitlementDeleteArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeGameJoinArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeGameSpectateArgs {}
 
- 
 export interface RPCSubscribeGuildCreateArgs {}
 
 /**
@@ -1737,37 +1737,37 @@ export interface RPCSubscribeGuildStatusArgs {
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeLobbyDeleteArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeLobbyMemberConnectArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeLobbyMemberDisconnectArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeLobbyMemberUpdateArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeLobbyMessageArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeLobbyUpdateArgs {}
 
 /**
@@ -1800,25 +1800,24 @@ export interface RPCSubscribeMessageUpdateArgs {
 	channel_id: Snowflake;
 }
 
- 
 export interface RPCSubscribeNotificationCreateArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeOverlayArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeOverlayUpdateArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeRelationshipUpdateArgs {}
 
 /**
@@ -1844,25 +1843,23 @@ export interface RPCSubscribeSpeakingStopArgs {
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeUserAchievementUpdateArgs {}
 
- 
 export interface RPCSubscribeVoiceChannelSelectArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeVoiceConnectionStatusArgs {}
 
- 
 export interface RPCSubscribeVoiceSettingsUpdateArgs {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCSubscribeVoiceSettingsUpdate2Args {}
 
 /**
@@ -1898,7 +1895,7 @@ export interface RPCSubscribeVoiceStateUpdateArgs {
 /**
  * @unstable
  */
- 
+
 export interface RPCActivityInviteDispatchData {}
 
 /**
@@ -1934,7 +1931,7 @@ export interface RPCActivitySpectateDispatchData {
 /**
  * @unstable
  */
- 
+
 export interface RPCCaptureShortcutChangeDispatchData {}
 
 /**
@@ -1958,19 +1955,19 @@ export interface RPCChannelCreateDispatchData {
 /**
  * @unstable
  */
- 
+
 export interface RPCCurrentUserUpdateDispatchData {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCEntitlementCreateDispatchData {}
 
 /**
  * @unstable
  */
- 
+
 export interface RPCEntitlementDeleteDispatchData {}
 
 /**
@@ -3419,216 +3416,216 @@ export type RPCMessagePayload =
 	| RPCCommandUpdateLobbyMemberPayload
 	| RPCCommandUpdateLobbyPayload
 	| RPCCommandValidateApplicationPayload;
-  
-  // TODO: get rid of all types above as they will be within discord-api-types soon
 
-  export interface MappedRPCCommandsResultsData {
-    [RPCCommands.Authorize]: RPCAuthorizeResultData;
-    [RPCCommands.Authenticate]: RPCAuthenticateResultData;
-    [RPCCommands.GetChannel]: RPCGetChannelResultData;
-    [RPCCommands.GetChannels]: RPCGetChannelsResultData;
-    [RPCCommands.GetGuild]: RPCGetGuildResultData;
-    [RPCCommands.GetGuilds]: RPCGetGuildsResultData;
-    [RPCCommands.GetUser]: RPCGetUserResultData;
-    [RPCCommands.GetVoiceSettings]: RPCGetVoiceSettingsResultData;
-    [RPCCommands.SelectTextChannel]: RPCSelectTextChannelResultData;
-    [RPCCommands.SelectVoiceChannel]: RPCSelectVoiceChannelResultData;
-    [RPCCommands.SetActivity]: RPCSetActivityResultData;
-    [RPCCommands.SetVoiceSettings]: RPCSetVoiceSettingsResultData;
-    [RPCCommands.Subscribe]: RPCSubscribeResultData;
-    [RPCCommands.Unsubscribe]: RPCSubscribeResultData;
-    [RPCCommands.AcceptActivityInvite]: RPCAcceptActivityInviteResultData;
-    [RPCCommands.ActivityInviteUser]: RPCActivityInviteUserResultData;
-    [RPCCommands.BraintreePopupBridgeCallback]: RPCBraintreePopupBridgeCallbackResultData;
-    [RPCCommands.BrowserHandoff]: RPCBrowserHandoffResultData;
-    [RPCCommands.CaptureShortcut]: RPCCaptureShortcutResultData;
-    [RPCCommands.CloseActivityRequest]: RPCCloseActivityRequestResultData;
-    [RPCCommands.ConnectToLobby]: RPCConnectToLobbyResultData;
-    [RPCCommands.ConnectToLobbyVoice]: RPCConnectToLobbyVoiceResultData;
-    [RPCCommands.ConnectionsCallback]: RPCConnectionsCallbackResultData;
-    [RPCCommands.CreateChannelInvite]: RPCCreateChannelInviteResultData;
-    [RPCCommands.CreateLobby]: RPCCreateLobbyResultData;
-    [RPCCommands.DeepLink]: RPCDeepLinkResultData;
-    [RPCCommands.DeleteLobby]: RPCDeleteLobbyResultData;
-    [RPCCommands.DisconnectFromLobby]: RPCDisconnectFromLobbyResultData;
-    [RPCCommands.DisconnectFromLobbyVoice]: RPCDisconnectFromLobbyVoiceResultData;
-    [RPCCommands.GetApplicationTicket]: RPCGetApplicationTicketResultData;
-    [RPCCommands.GetEntitlementTicket]: RPCGetEntitlementTicketResultData;
-    [RPCCommands.GetEntitlements]: RPCGetEntitlementsResultData;
-    [RPCCommands.GetImage]: RPCGetImageResultData;
-    [RPCCommands.GetNetworkingConfig]: RPCGetNetworkingConfigResultData;
-    [RPCCommands.GetRelationships]: RPCGetRelationshipsResultData;
-    [RPCCommands.GetSelectedVoiceChannel]: RPCGetSelectedVoiceChannelResultData;
-    [RPCCommands.GetSkus]: RPCGetSkusResultData;
-    [RPCCommands.GetUserAchievements]: RPCGetUserAchievementsResultData;
-    [RPCCommands.GiftCodeBrowser]: RPCGiftCodeBrowserResultData;
-    [RPCCommands.GuildTemplateBrowser]: RPCGuildTemplateBrowserResultData;
-    [RPCCommands.InviteBrowser]: RPCInviteBrowserResultData;
-    [RPCCommands.NetworkingCreateToken]: RPCNetworkingCreateTokenResultData;
-    [RPCCommands.NetworkingPeerMetrics]: RPCNetworkingPeerMetricsResultData;
-    [RPCCommands.NetworkingSystemMetrics]: RPCNetworkingSystemMetricsResultData;
-    [RPCCommands.OpenOverlayActivityInvite]: RPCOpenOverlayActivityInviteResultData;
-    [RPCCommands.OpenOverlayGuildInvite]: RPCOpenOverlayGuildInviteResultData;
-    [RPCCommands.OpenOverlayVoiceSettings]: RPCOpenOverlayVoiceSettingsResultData;
-    [RPCCommands.Overlay]: RPCOverlayResultData;
-    [RPCCommands.SearchLobbies]: RPCSearchLobbiesResultData;
-    [RPCCommands.SendActivityJoinInvite]: RPCSendActivityJoinInviteResultData;
-    [RPCCommands.SendToLobby]: RPCSendToLobbyResultData;
-    [RPCCommands.SetCertifiedDevices]: RPCSetCertifiedDevicesResultData;
-    [RPCCommands.SetOverlayLocked]: RPCSetOverlayLockedResultData;
-    [RPCCommands.SetUserAchievement]: RPCSetUserAchievementResultData;
-    [RPCCommands.SetUserVoiceSettings]: RPCSetUserVoiceSettingsResultData;
-    [RPCCommands.SetUserVoiceSettings2]: RPCSetUserVoiceSettings2ResultData;
-    [RPCCommands.SetVoiceSettings2]: RPCSetVoiceSettings2ResultData;
-    [RPCCommands.StartPurchase]: RPCStartPurchaseResultData;
-    [RPCCommands.UpdateLobby]: RPCUpdateLobbyResultData;
-    [RPCCommands.UpdateLobbyMember]: RPCUpdateLobbyMemberResultData;
-    [RPCCommands.ValidateApplication]: RPCValidateApplicationResultData;
-  }
-  
-  export interface MappedRPCCommandsArgs {
-    [RPCCommands.Authorize]: RPCAuthorizeArgs;
-    [RPCCommands.Authenticate]: RPCAuthenticateArgs;
-    [RPCCommands.GetChannel]: RPCGetChannelArgs;
-    [RPCCommands.GetChannels]: RPCGetChannelsArgs;
-    [RPCCommands.GetGuild]: RPCGetGuildArgs;
-    [RPCCommands.GetGuilds]: RPCGetGuildsArgs;
-    [RPCCommands.GetUser]: RPCGetUserArgs;
-    [RPCCommands.GetVoiceSettings]: RPCGetVoiceSettingsArgs;
-    [RPCCommands.SelectTextChannel]: RPCSelectTextChannelArgs;
-    [RPCCommands.SelectVoiceChannel]: RPCSelectVoiceChannelArgs;
-    [RPCCommands.SetActivity]: RPCSetActivityArgs;
-    [RPCCommands.SetVoiceSettings]: RPCSetVoiceSettingsArgs;
-    [RPCCommands.Subscribe]: RPCCommandSubscribePayload['args'];
-    [RPCCommands.Unsubscribe]: RPCCommandSubscribePayload['args'];
-    [RPCCommands.AcceptActivityInvite]: RPCAcceptActivityInviteArgs;
-    [RPCCommands.ActivityInviteUser]: RPCActivityInviteUserArgs;
-    [RPCCommands.BraintreePopupBridgeCallback]: RPCBraintreePopupBridgeCallbackArgs;
-    [RPCCommands.BrowserHandoff]: RPCBrowserHandoffArgs;
-    [RPCCommands.CaptureShortcut]: RPCCaptureShortcutArgs;
-    [RPCCommands.CloseActivityRequest]: RPCCloseActivityRequestArgs;
-    [RPCCommands.ConnectToLobby]: RPCConnectToLobbyArgs;
-    [RPCCommands.ConnectToLobbyVoice]: RPCConnectToLobbyVoiceArgs;
-    [RPCCommands.ConnectionsCallback]: RPCConnectionsCallbackArgs;
-    [RPCCommands.CreateChannelInvite]: RPCCreateChannelInviteArgs;
-    [RPCCommands.CreateLobby]: RPCCreateLobbyArgs;
-    [RPCCommands.DeepLink]: RPCDeepLinkArgs;
-    [RPCCommands.DeleteLobby]: RPCDeleteLobbyArgs;
-    [RPCCommands.DisconnectFromLobby]: RPCDisconnectFromLobbyArgs;
-    [RPCCommands.DisconnectFromLobbyVoice]: RPCDisconnectFromLobbyVoiceArgs;
-    [RPCCommands.GetApplicationTicket]: RPCGetApplicationTicketArgs;
-    [RPCCommands.GetEntitlementTicket]: RPCGetEntitlementTicketArgs;
-    [RPCCommands.GetEntitlements]: RPCGetEntitlementsArgs;
-    [RPCCommands.GetImage]: RPCGetImageArgs;
-    [RPCCommands.GetNetworkingConfig]: RPCGetNetworkingConfigArgs;
-    [RPCCommands.GetRelationships]: RPCGetRelationshipsArgs;
-    [RPCCommands.GetSelectedVoiceChannel]: RPCGetSelectedVoiceChannelArgs;
-    [RPCCommands.GetSkus]: RPCGetSkusArgs;
-    [RPCCommands.GetUserAchievements]: RPCGetUserAchievementsArgs;
-    [RPCCommands.GiftCodeBrowser]: RPCGiftCodeBrowserArgs;
-    [RPCCommands.GuildTemplateBrowser]: RPCGuildTemplateBrowserArgs;
-    [RPCCommands.InviteBrowser]: RPCInviteBrowserArgs;
-    [RPCCommands.NetworkingCreateToken]: RPCNetworkingCreateTokenArgs;
-    [RPCCommands.NetworkingPeerMetrics]: RPCNetworkingPeerMetricsArgs;
-    [RPCCommands.NetworkingSystemMetrics]: RPCNetworkingSystemMetricsArgs;
-    [RPCCommands.OpenOverlayActivityInvite]: RPCOpenOverlayActivityInviteArgs;
-    [RPCCommands.OpenOverlayGuildInvite]: RPCOpenOverlayGuildInviteArgs;
-    [RPCCommands.OpenOverlayVoiceSettings]: RPCOpenOverlayVoiceSettingsArgs;
-    [RPCCommands.Overlay]: RPCOverlayArgs;
-    [RPCCommands.SearchLobbies]: RPCSearchLobbiesArgs;
-    [RPCCommands.SendActivityJoinInvite]: RPCSendActivityJoinInviteArgs;
-		[RPCCommands.SendActivityJoinRequest]: RPCSendActivityJoinRequestArgs;
-    [RPCCommands.SendToLobby]: RPCSendToLobbyArgs;
-    [RPCCommands.SetCertifiedDevices]: RPCSetCertifiedDevicesArgs;
-    [RPCCommands.SetOverlayLocked]: RPCSetOverlayLockedArgs;
-    [RPCCommands.SetUserAchievement]: RPCSetUserAchievementArgs;
-    [RPCCommands.SetUserVoiceSettings]: RPCSetUserVoiceSettingsArgs;
-    [RPCCommands.SetUserVoiceSettings2]: RPCSetUserVoiceSettings2Args;
-    [RPCCommands.SetVoiceSettings2]: RPCSetVoiceSettings2Args;
-    [RPCCommands.StartPurchase]: RPCStartPurchaseArgs;
-    [RPCCommands.UpdateLobby]: RPCUpdateLobbyArgs;
-    [RPCCommands.UpdateLobbyMember]: RPCUpdateLobbyMemberArgs;
-    [RPCCommands.ValidateApplication]: RPCValidateApplicationArgs;
-  }
+// TODO: get rid of all types above as they will be within discord-api-types soon
 
-	export type RPCCallableCommands = Exclude<RPCCommands, RPCCommands.Dispatch>;
-  
-  export interface MappedRPCSubscribeEventsArgs {
-    [RPCEvents.ActivityInvite]: RPCSubscribeActivityInviteArgs;
-    [RPCEvents.ActivityJoin]: RPCSubscribeActivityJoinArgs;
-    [RPCEvents.ActivityJoinRequest]: RPCSubscribeActivityJoinRequestArgs;
-    [RPCEvents.ActivitySpectate]: RPCSubscribeActivitySpectateArgs;
-    [RPCEvents.CaptureShortcutChange]: RPCSubscribeCaptureShortcutChangeArgs;
-    [RPCEvents.ChannelCreate]: RPCSubscribeChannelCreateArgs;
-    [RPCEvents.CurrentUserUpdate]: RPCSubscribeCurrentUserUpdateArgs;
-    [RPCEvents.EntitlementCreate]: RPCSubscribeEntitlementCreateArgs;
-    [RPCEvents.EntitlementDelete]: RPCSubscribeEntitlementDeleteArgs;
-    [RPCEvents.GameJoin]: RPCSubscribeGameJoinArgs;
-    [RPCEvents.GameSpectate]: RPCSubscribeGameSpectateArgs;
-    [RPCEvents.GuildCreate]: RPCSubscribeGuildCreateArgs;
-    [RPCEvents.GuildStatus]: RPCSubscribeGuildStatusArgs;
-    [RPCEvents.LobbyDelete]: RPCSubscribeLobbyDeleteArgs;
-    [RPCEvents.LobbyMemberConnect]: RPCSubscribeLobbyMemberConnectArgs;
-    [RPCEvents.LobbyMemberDisconnect]: RPCSubscribeLobbyMemberDisconnectArgs;
-    [RPCEvents.LobbyMemberUpdate]: RPCSubscribeLobbyMemberUpdateArgs;
-    [RPCEvents.LobbyMessage]: RPCSubscribeLobbyMessageArgs;
-    [RPCEvents.LobbyUpdate]: RPCSubscribeLobbyUpdateArgs;
-    [RPCEvents.MessageCreate]: RPCSubscribeMessageCreateArgs;
-    [RPCEvents.MessageDelete]: RPCSubscribeMessageDeleteArgs;
-    [RPCEvents.MessageUpdate]: RPCSubscribeMessageUpdateArgs;
-    [RPCEvents.NotificationCreate]: RPCSubscribeNotificationCreateArgs;
-    [RPCEvents.Overlay]: RPCSubscribeOverlayArgs;
-    [RPCEvents.OverlayUpdate]: RPCSubscribeOverlayUpdateArgs;
-    [RPCEvents.RelationshipUpdate]: RPCSubscribeRelationshipUpdateArgs;
-    [RPCEvents.SpeakingStart]: RPCSubscribeSpeakingStartArgs;
-    [RPCEvents.SpeakingStop]: RPCSubscribeSpeakingStopArgs;
-    [RPCEvents.UserAchievementUpdate]: RPCSubscribeUserAchievementUpdateArgs;
-    [RPCEvents.VoiceChannelSelect]: RPCSubscribeVoiceChannelSelectArgs;
-    [RPCEvents.VoiceConnectionStatus]: RPCSubscribeVoiceConnectionStatusArgs;
-    [RPCEvents.VoiceSettingsUpdate]: RPCSubscribeVoiceSettingsUpdateArgs;
-    [RPCEvents.VoiceSettingsUpdate2]: RPCSubscribeVoiceSettingsUpdate2Args;
-    [RPCEvents.VoiceStateCreate]: RPCSubscribeVoiceStateCreateArgs;
-    [RPCEvents.VoiceStateDelete]: RPCSubscribeVoiceStateDeleteArgs;
-    [RPCEvents.VoiceStateUpdate]: RPCSubscribeVoiceStateUpdateArgs;
-  }
-  
-  export interface MappedRPCEventsDispatchData {
-    [RPCEvents.ActivityInvite]: RPCActivityInviteDispatchData;
-    [RPCEvents.ActivityJoin]: RPCActivityJoinDispatchData;
-    [RPCEvents.ActivityJoinRequest]: RPCActivityJoinRequestDispatchData;
-    [RPCEvents.ActivitySpectate]: RPCActivitySpectateDispatchData;
-    [RPCEvents.CaptureShortcutChange]: RPCCaptureShortcutChangeDispatchData;
-    [RPCEvents.ChannelCreate]: RPCChannelCreateDispatchData;
-    [RPCEvents.CurrentUserUpdate]: RPCCurrentUserUpdateDispatchData;
-    [RPCEvents.EntitlementCreate]: RPCEntitlementCreateDispatchData;
-    [RPCEvents.EntitlementDelete]: RPCEntitlementDeleteDispatchData;
-    [RPCEvents.Error]: RPCErrorDispatchData;
-    [RPCEvents.GameJoin]: RPCGameJoinDispatchData;
-    [RPCEvents.GameSpectate]: RPCGameSpectateDispatchData;
-    [RPCEvents.GuildCreate]: RPCGuildCreateDispatchData;
-    [RPCEvents.GuildStatus]: RPCGuildStatusDispatchData;
-    [RPCEvents.LobbyDelete]: RPCLobbyDeleteDispatchData;
-    [RPCEvents.LobbyMemberConnect]: RPCLobbyMemberConnectDispatchData;
-    [RPCEvents.LobbyMemberDisconnect]: RPCLobbyMemberDisconnectDispatchData;
-    [RPCEvents.LobbyMemberUpdate]: RPCLobbyMemberUpdateDispatchData;
-    [RPCEvents.LobbyMessage]: RPCLobbyMessageDispatchData;
-    [RPCEvents.LobbyUpdate]: RPCLobbyUpdateDispatchData;
-    [RPCEvents.MessageCreate]: RPCMessageCreateDispatchData;
-    [RPCEvents.MessageDelete]: RPCMessageDeleteDispatchData;
-    [RPCEvents.MessageUpdate]: RPCMessageUpdateDispatchData;
-    [RPCEvents.NotificationCreate]: RPCNotificationCreateDispatchData;
-    [RPCEvents.Overlay]: RPCOverlayDispatchData;
-    [RPCEvents.OverlayUpdate]: RPCOverlayUpdateDispatchData;
-    [RPCEvents.Ready]: RPCReadyDispatchData;
-    [RPCEvents.RelationshipUpdate]: RPCRelationshipUpdateDispatchData;
-    [RPCEvents.SpeakingStart]: RPCSpeakingStartDispatchData;
-    [RPCEvents.SpeakingStop]: RPCSpeakingStopDispatchData;
-    [RPCEvents.UserAchievementUpdate]: RPCUserAchievementUpdateDispatchData;
-    [RPCEvents.VoiceChannelSelect]: RPCVoiceChannelSelectDispatchData;
-    [RPCEvents.VoiceConnectionStatus]: RPCVoiceConnectionStatusDispatchData;
-    [RPCEvents.VoiceSettingsUpdate]: RPCVoiceSettingsUpdateDispatchData;
-    [RPCEvents.VoiceSettingsUpdate2]: RPCVoiceSettingsUpdate2DispatchData;
-    [RPCEvents.VoiceStateCreate]: RPCVoiceStateCreateDispatchData;
-    [RPCEvents.VoiceStateDelete]: RPCVoiceStateDeleteDispatchData;
-    [RPCEvents.VoiceStateUpdate]: RPCVoiceStateUpdateDispatchData;
-  }
+export interface MappedRPCCommandsResultsData {
+	[RPCCommands.Authorize]: RPCAuthorizeResultData;
+	[RPCCommands.Authenticate]: RPCAuthenticateResultData;
+	[RPCCommands.GetChannel]: RPCGetChannelResultData;
+	[RPCCommands.GetChannels]: RPCGetChannelsResultData;
+	[RPCCommands.GetGuild]: RPCGetGuildResultData;
+	[RPCCommands.GetGuilds]: RPCGetGuildsResultData;
+	[RPCCommands.GetUser]: RPCGetUserResultData;
+	[RPCCommands.GetVoiceSettings]: RPCGetVoiceSettingsResultData;
+	[RPCCommands.SelectTextChannel]: RPCSelectTextChannelResultData;
+	[RPCCommands.SelectVoiceChannel]: RPCSelectVoiceChannelResultData;
+	[RPCCommands.SetActivity]: RPCSetActivityResultData;
+	[RPCCommands.SetVoiceSettings]: RPCSetVoiceSettingsResultData;
+	[RPCCommands.Subscribe]: RPCSubscribeResultData;
+	[RPCCommands.Unsubscribe]: RPCSubscribeResultData;
+	[RPCCommands.AcceptActivityInvite]: RPCAcceptActivityInviteResultData;
+	[RPCCommands.ActivityInviteUser]: RPCActivityInviteUserResultData;
+	[RPCCommands.BraintreePopupBridgeCallback]: RPCBraintreePopupBridgeCallbackResultData;
+	[RPCCommands.BrowserHandoff]: RPCBrowserHandoffResultData;
+	[RPCCommands.CaptureShortcut]: RPCCaptureShortcutResultData;
+	[RPCCommands.CloseActivityRequest]: RPCCloseActivityRequestResultData;
+	[RPCCommands.ConnectToLobby]: RPCConnectToLobbyResultData;
+	[RPCCommands.ConnectToLobbyVoice]: RPCConnectToLobbyVoiceResultData;
+	[RPCCommands.ConnectionsCallback]: RPCConnectionsCallbackResultData;
+	[RPCCommands.CreateChannelInvite]: RPCCreateChannelInviteResultData;
+	[RPCCommands.CreateLobby]: RPCCreateLobbyResultData;
+	[RPCCommands.DeepLink]: RPCDeepLinkResultData;
+	[RPCCommands.DeleteLobby]: RPCDeleteLobbyResultData;
+	[RPCCommands.DisconnectFromLobby]: RPCDisconnectFromLobbyResultData;
+	[RPCCommands.DisconnectFromLobbyVoice]: RPCDisconnectFromLobbyVoiceResultData;
+	[RPCCommands.GetApplicationTicket]: RPCGetApplicationTicketResultData;
+	[RPCCommands.GetEntitlementTicket]: RPCGetEntitlementTicketResultData;
+	[RPCCommands.GetEntitlements]: RPCGetEntitlementsResultData;
+	[RPCCommands.GetImage]: RPCGetImageResultData;
+	[RPCCommands.GetNetworkingConfig]: RPCGetNetworkingConfigResultData;
+	[RPCCommands.GetRelationships]: RPCGetRelationshipsResultData;
+	[RPCCommands.GetSelectedVoiceChannel]: RPCGetSelectedVoiceChannelResultData;
+	[RPCCommands.GetSkus]: RPCGetSkusResultData;
+	[RPCCommands.GetUserAchievements]: RPCGetUserAchievementsResultData;
+	[RPCCommands.GiftCodeBrowser]: RPCGiftCodeBrowserResultData;
+	[RPCCommands.GuildTemplateBrowser]: RPCGuildTemplateBrowserResultData;
+	[RPCCommands.InviteBrowser]: RPCInviteBrowserResultData;
+	[RPCCommands.NetworkingCreateToken]: RPCNetworkingCreateTokenResultData;
+	[RPCCommands.NetworkingPeerMetrics]: RPCNetworkingPeerMetricsResultData;
+	[RPCCommands.NetworkingSystemMetrics]: RPCNetworkingSystemMetricsResultData;
+	[RPCCommands.OpenOverlayActivityInvite]: RPCOpenOverlayActivityInviteResultData;
+	[RPCCommands.OpenOverlayGuildInvite]: RPCOpenOverlayGuildInviteResultData;
+	[RPCCommands.OpenOverlayVoiceSettings]: RPCOpenOverlayVoiceSettingsResultData;
+	[RPCCommands.Overlay]: RPCOverlayResultData;
+	[RPCCommands.SearchLobbies]: RPCSearchLobbiesResultData;
+	[RPCCommands.SendActivityJoinInvite]: RPCSendActivityJoinInviteResultData;
+	[RPCCommands.SendToLobby]: RPCSendToLobbyResultData;
+	[RPCCommands.SetCertifiedDevices]: RPCSetCertifiedDevicesResultData;
+	[RPCCommands.SetOverlayLocked]: RPCSetOverlayLockedResultData;
+	[RPCCommands.SetUserAchievement]: RPCSetUserAchievementResultData;
+	[RPCCommands.SetUserVoiceSettings]: RPCSetUserVoiceSettingsResultData;
+	[RPCCommands.SetUserVoiceSettings2]: RPCSetUserVoiceSettings2ResultData;
+	[RPCCommands.SetVoiceSettings2]: RPCSetVoiceSettings2ResultData;
+	[RPCCommands.StartPurchase]: RPCStartPurchaseResultData;
+	[RPCCommands.UpdateLobby]: RPCUpdateLobbyResultData;
+	[RPCCommands.UpdateLobbyMember]: RPCUpdateLobbyMemberResultData;
+	[RPCCommands.ValidateApplication]: RPCValidateApplicationResultData;
+}
+
+export interface MappedRPCCommandsArgs {
+	[RPCCommands.Authorize]: RPCAuthorizeArgs;
+	[RPCCommands.Authenticate]: RPCAuthenticateArgs;
+	[RPCCommands.GetChannel]: RPCGetChannelArgs;
+	[RPCCommands.GetChannels]: RPCGetChannelsArgs;
+	[RPCCommands.GetGuild]: RPCGetGuildArgs;
+	[RPCCommands.GetGuilds]: RPCGetGuildsArgs;
+	[RPCCommands.GetUser]: RPCGetUserArgs;
+	[RPCCommands.GetVoiceSettings]: RPCGetVoiceSettingsArgs;
+	[RPCCommands.SelectTextChannel]: RPCSelectTextChannelArgs;
+	[RPCCommands.SelectVoiceChannel]: RPCSelectVoiceChannelArgs;
+	[RPCCommands.SetActivity]: RPCSetActivityArgs;
+	[RPCCommands.SetVoiceSettings]: RPCSetVoiceSettingsArgs;
+	[RPCCommands.Subscribe]: RPCCommandSubscribePayload['args'];
+	[RPCCommands.Unsubscribe]: RPCCommandSubscribePayload['args'];
+	[RPCCommands.AcceptActivityInvite]: RPCAcceptActivityInviteArgs;
+	[RPCCommands.ActivityInviteUser]: RPCActivityInviteUserArgs;
+	[RPCCommands.BraintreePopupBridgeCallback]: RPCBraintreePopupBridgeCallbackArgs;
+	[RPCCommands.BrowserHandoff]: RPCBrowserHandoffArgs;
+	[RPCCommands.CaptureShortcut]: RPCCaptureShortcutArgs;
+	[RPCCommands.CloseActivityRequest]: RPCCloseActivityRequestArgs;
+	[RPCCommands.ConnectToLobby]: RPCConnectToLobbyArgs;
+	[RPCCommands.ConnectToLobbyVoice]: RPCConnectToLobbyVoiceArgs;
+	[RPCCommands.ConnectionsCallback]: RPCConnectionsCallbackArgs;
+	[RPCCommands.CreateChannelInvite]: RPCCreateChannelInviteArgs;
+	[RPCCommands.CreateLobby]: RPCCreateLobbyArgs;
+	[RPCCommands.DeepLink]: RPCDeepLinkArgs;
+	[RPCCommands.DeleteLobby]: RPCDeleteLobbyArgs;
+	[RPCCommands.DisconnectFromLobby]: RPCDisconnectFromLobbyArgs;
+	[RPCCommands.DisconnectFromLobbyVoice]: RPCDisconnectFromLobbyVoiceArgs;
+	[RPCCommands.GetApplicationTicket]: RPCGetApplicationTicketArgs;
+	[RPCCommands.GetEntitlementTicket]: RPCGetEntitlementTicketArgs;
+	[RPCCommands.GetEntitlements]: RPCGetEntitlementsArgs;
+	[RPCCommands.GetImage]: RPCGetImageArgs;
+	[RPCCommands.GetNetworkingConfig]: RPCGetNetworkingConfigArgs;
+	[RPCCommands.GetRelationships]: RPCGetRelationshipsArgs;
+	[RPCCommands.GetSelectedVoiceChannel]: RPCGetSelectedVoiceChannelArgs;
+	[RPCCommands.GetSkus]: RPCGetSkusArgs;
+	[RPCCommands.GetUserAchievements]: RPCGetUserAchievementsArgs;
+	[RPCCommands.GiftCodeBrowser]: RPCGiftCodeBrowserArgs;
+	[RPCCommands.GuildTemplateBrowser]: RPCGuildTemplateBrowserArgs;
+	[RPCCommands.InviteBrowser]: RPCInviteBrowserArgs;
+	[RPCCommands.NetworkingCreateToken]: RPCNetworkingCreateTokenArgs;
+	[RPCCommands.NetworkingPeerMetrics]: RPCNetworkingPeerMetricsArgs;
+	[RPCCommands.NetworkingSystemMetrics]: RPCNetworkingSystemMetricsArgs;
+	[RPCCommands.OpenOverlayActivityInvite]: RPCOpenOverlayActivityInviteArgs;
+	[RPCCommands.OpenOverlayGuildInvite]: RPCOpenOverlayGuildInviteArgs;
+	[RPCCommands.OpenOverlayVoiceSettings]: RPCOpenOverlayVoiceSettingsArgs;
+	[RPCCommands.Overlay]: RPCOverlayArgs;
+	[RPCCommands.SearchLobbies]: RPCSearchLobbiesArgs;
+	[RPCCommands.SendActivityJoinInvite]: RPCSendActivityJoinInviteArgs;
+	[RPCCommands.SendActivityJoinRequest]: RPCSendActivityJoinRequestArgs;
+	[RPCCommands.SendToLobby]: RPCSendToLobbyArgs;
+	[RPCCommands.SetCertifiedDevices]: RPCSetCertifiedDevicesArgs;
+	[RPCCommands.SetOverlayLocked]: RPCSetOverlayLockedArgs;
+	[RPCCommands.SetUserAchievement]: RPCSetUserAchievementArgs;
+	[RPCCommands.SetUserVoiceSettings]: RPCSetUserVoiceSettingsArgs;
+	[RPCCommands.SetUserVoiceSettings2]: RPCSetUserVoiceSettings2Args;
+	[RPCCommands.SetVoiceSettings2]: RPCSetVoiceSettings2Args;
+	[RPCCommands.StartPurchase]: RPCStartPurchaseArgs;
+	[RPCCommands.UpdateLobby]: RPCUpdateLobbyArgs;
+	[RPCCommands.UpdateLobbyMember]: RPCUpdateLobbyMemberArgs;
+	[RPCCommands.ValidateApplication]: RPCValidateApplicationArgs;
+}
+
+export type RPCCallableCommands = Exclude<RPCCommands, RPCCommands.Dispatch>;
+
+export interface MappedRPCSubscribeEventsArgs {
+	[RPCEvents.ActivityInvite]: RPCSubscribeActivityInviteArgs;
+	[RPCEvents.ActivityJoin]: RPCSubscribeActivityJoinArgs;
+	[RPCEvents.ActivityJoinRequest]: RPCSubscribeActivityJoinRequestArgs;
+	[RPCEvents.ActivitySpectate]: RPCSubscribeActivitySpectateArgs;
+	[RPCEvents.CaptureShortcutChange]: RPCSubscribeCaptureShortcutChangeArgs;
+	[RPCEvents.ChannelCreate]: RPCSubscribeChannelCreateArgs;
+	[RPCEvents.CurrentUserUpdate]: RPCSubscribeCurrentUserUpdateArgs;
+	[RPCEvents.EntitlementCreate]: RPCSubscribeEntitlementCreateArgs;
+	[RPCEvents.EntitlementDelete]: RPCSubscribeEntitlementDeleteArgs;
+	[RPCEvents.GameJoin]: RPCSubscribeGameJoinArgs;
+	[RPCEvents.GameSpectate]: RPCSubscribeGameSpectateArgs;
+	[RPCEvents.GuildCreate]: RPCSubscribeGuildCreateArgs;
+	[RPCEvents.GuildStatus]: RPCSubscribeGuildStatusArgs;
+	[RPCEvents.LobbyDelete]: RPCSubscribeLobbyDeleteArgs;
+	[RPCEvents.LobbyMemberConnect]: RPCSubscribeLobbyMemberConnectArgs;
+	[RPCEvents.LobbyMemberDisconnect]: RPCSubscribeLobbyMemberDisconnectArgs;
+	[RPCEvents.LobbyMemberUpdate]: RPCSubscribeLobbyMemberUpdateArgs;
+	[RPCEvents.LobbyMessage]: RPCSubscribeLobbyMessageArgs;
+	[RPCEvents.LobbyUpdate]: RPCSubscribeLobbyUpdateArgs;
+	[RPCEvents.MessageCreate]: RPCSubscribeMessageCreateArgs;
+	[RPCEvents.MessageDelete]: RPCSubscribeMessageDeleteArgs;
+	[RPCEvents.MessageUpdate]: RPCSubscribeMessageUpdateArgs;
+	[RPCEvents.NotificationCreate]: RPCSubscribeNotificationCreateArgs;
+	[RPCEvents.Overlay]: RPCSubscribeOverlayArgs;
+	[RPCEvents.OverlayUpdate]: RPCSubscribeOverlayUpdateArgs;
+	[RPCEvents.RelationshipUpdate]: RPCSubscribeRelationshipUpdateArgs;
+	[RPCEvents.SpeakingStart]: RPCSubscribeSpeakingStartArgs;
+	[RPCEvents.SpeakingStop]: RPCSubscribeSpeakingStopArgs;
+	[RPCEvents.UserAchievementUpdate]: RPCSubscribeUserAchievementUpdateArgs;
+	[RPCEvents.VoiceChannelSelect]: RPCSubscribeVoiceChannelSelectArgs;
+	[RPCEvents.VoiceConnectionStatus]: RPCSubscribeVoiceConnectionStatusArgs;
+	[RPCEvents.VoiceSettingsUpdate]: RPCSubscribeVoiceSettingsUpdateArgs;
+	[RPCEvents.VoiceSettingsUpdate2]: RPCSubscribeVoiceSettingsUpdate2Args;
+	[RPCEvents.VoiceStateCreate]: RPCSubscribeVoiceStateCreateArgs;
+	[RPCEvents.VoiceStateDelete]: RPCSubscribeVoiceStateDeleteArgs;
+	[RPCEvents.VoiceStateUpdate]: RPCSubscribeVoiceStateUpdateArgs;
+}
+
+export interface MappedRPCEventsDispatchData {
+	[RPCEvents.ActivityInvite]: RPCActivityInviteDispatchData;
+	[RPCEvents.ActivityJoin]: RPCActivityJoinDispatchData;
+	[RPCEvents.ActivityJoinRequest]: RPCActivityJoinRequestDispatchData;
+	[RPCEvents.ActivitySpectate]: RPCActivitySpectateDispatchData;
+	[RPCEvents.CaptureShortcutChange]: RPCCaptureShortcutChangeDispatchData;
+	[RPCEvents.ChannelCreate]: RPCChannelCreateDispatchData;
+	[RPCEvents.CurrentUserUpdate]: RPCCurrentUserUpdateDispatchData;
+	[RPCEvents.EntitlementCreate]: RPCEntitlementCreateDispatchData;
+	[RPCEvents.EntitlementDelete]: RPCEntitlementDeleteDispatchData;
+	[RPCEvents.Error]: RPCErrorDispatchData;
+	[RPCEvents.GameJoin]: RPCGameJoinDispatchData;
+	[RPCEvents.GameSpectate]: RPCGameSpectateDispatchData;
+	[RPCEvents.GuildCreate]: RPCGuildCreateDispatchData;
+	[RPCEvents.GuildStatus]: RPCGuildStatusDispatchData;
+	[RPCEvents.LobbyDelete]: RPCLobbyDeleteDispatchData;
+	[RPCEvents.LobbyMemberConnect]: RPCLobbyMemberConnectDispatchData;
+	[RPCEvents.LobbyMemberDisconnect]: RPCLobbyMemberDisconnectDispatchData;
+	[RPCEvents.LobbyMemberUpdate]: RPCLobbyMemberUpdateDispatchData;
+	[RPCEvents.LobbyMessage]: RPCLobbyMessageDispatchData;
+	[RPCEvents.LobbyUpdate]: RPCLobbyUpdateDispatchData;
+	[RPCEvents.MessageCreate]: RPCMessageCreateDispatchData;
+	[RPCEvents.MessageDelete]: RPCMessageDeleteDispatchData;
+	[RPCEvents.MessageUpdate]: RPCMessageUpdateDispatchData;
+	[RPCEvents.NotificationCreate]: RPCNotificationCreateDispatchData;
+	[RPCEvents.Overlay]: RPCOverlayDispatchData;
+	[RPCEvents.OverlayUpdate]: RPCOverlayUpdateDispatchData;
+	[RPCEvents.Ready]: RPCReadyDispatchData;
+	[RPCEvents.RelationshipUpdate]: RPCRelationshipUpdateDispatchData;
+	[RPCEvents.SpeakingStart]: RPCSpeakingStartDispatchData;
+	[RPCEvents.SpeakingStop]: RPCSpeakingStopDispatchData;
+	[RPCEvents.UserAchievementUpdate]: RPCUserAchievementUpdateDispatchData;
+	[RPCEvents.VoiceChannelSelect]: RPCVoiceChannelSelectDispatchData;
+	[RPCEvents.VoiceConnectionStatus]: RPCVoiceConnectionStatusDispatchData;
+	[RPCEvents.VoiceSettingsUpdate]: RPCVoiceSettingsUpdateDispatchData;
+	[RPCEvents.VoiceSettingsUpdate2]: RPCVoiceSettingsUpdate2DispatchData;
+	[RPCEvents.VoiceStateCreate]: RPCVoiceStateCreateDispatchData;
+	[RPCEvents.VoiceStateDelete]: RPCVoiceStateDeleteDispatchData;
+	[RPCEvents.VoiceStateUpdate]: RPCVoiceStateUpdateDispatchData;
+}

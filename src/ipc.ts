@@ -5,6 +5,7 @@ import { createConnection, type Socket } from 'node:net';
 import process from 'node:process';
 import { AsyncEventEmitter } from '@vladfrangu/async_event_emitter';
 import type { RPCClient } from './client';
+import { RPCCommands, RPCEvents } from './constants';
 
 enum OPCodes {
 	Handshake,
@@ -68,7 +69,6 @@ async function findEndpoint(tries = 0): Promise<string> {
 	}
 }
 
-
 export function encode(op: number, data: RPCPayload) {
 	const stringifiedData = JSON.stringify(data);
 	const length = Buffer.byteLength(stringifiedData);
@@ -83,7 +83,7 @@ export function encode(op: number, data: RPCPayload) {
 
 interface WorkingData {
 	full: string;
-	op: number | undefined
+	op: number | undefined;
 }
 
 const working: WorkingData = {
@@ -92,35 +92,35 @@ const working: WorkingData = {
 };
 
 export function decode(socket, callback) {
-  const packet = socket.read();
-  if (!packet) {
-    return;
-  }
+	const packet = socket.read();
+	if (!packet) {
+		return;
+	}
 
-  let { op } = working;
-  let raw;
-  if (working.full === '') {
-    op = working.op = packet.readInt32LE(0);
-    const len = packet.readInt32LE(4);
-    raw = packet.slice(8, len + 8);
-  } else {
-    raw = packet.toString();
-  }
+	let { op } = working;
+	let raw;
+	if (working.full === '') {
+		op = working.op = packet.readInt32LE(0);
+		const len = packet.readInt32LE(4);
+		raw = packet.slice(8, len + 8);
+	} else {
+		raw = packet.toString();
+	}
 
-  try {
-    const data = JSON.parse(working.full + raw);
-    callback({ op, data });  
-    working.full = '';
-    working.op = undefined;
-  } catch {
-    working.full += raw;
-  }
+	try {
+		const data = JSON.parse(working.full + raw);
+		callback({ op, data });
+		working.full = '';
+		working.op = undefined;
+	} catch {
+		working.full += raw;
+	}
 
-  decode(socket, callback);
+	decode(socket, callback);
 }
 
 export class IPCTransport extends AsyncEventEmitter {
-	private socket: Socket | null
+	private socket: Socket | null;
 
 	public constructor(public readonly client: RPCClient) {
 		super();
@@ -134,50 +134,51 @@ export class IPCTransport extends AsyncEventEmitter {
 		const socket = this.socket;
 
 		socket.on('close', this.onClose.bind(this));
-    socket.on('error', this.onClose.bind(this));
+		socket.on('error', this.onClose.bind(this));
 
 		this.emit('open');
-		
-    socket.write(encode(OPCodes.Handshake, {
-      v: 1,
-      client_id: this.client.clientId,
-    }));
-		
-    socket.pause();
-		
-    socket.on('readable', () => {
-      decode(socket, ({ op, data }) => {
-        switch (op) {
-          case OPCodes.PING:
-            this.send(data, OPCodes.PONG);
-            break;
-          case OPCodes.FRAME:
-            if (!data) {
-              return;
-            }
 
-            if (data.cmd === 'AUTHORIZE' && data.evt !== 'ERROR') {
-              findEndpoint()
-                .then((endpoint) => {
-                  this.client.request.endpoint = endpoint;
-                })
-                .catch((error) => {
-                  this.client.emit('error', error);
-                });
-            }
+		socket.write(
+			encode(OPCodes.Handshake, {
+				v: 1,
+				client_id: this.client.clientId,
+			}),
+		);
 
-            this.emit('message', data);
-            break;
-          case OPCodes.CLOSE:
-            this.emit('close', data);
-            break;
-          default:
-            break;
-        }
-      });
-    });
+		socket.pause();
+
+		socket.on('readable', () => {
+			decode(socket, ({ op, data }) => {
+				switch (op) {
+					case OPCodes.Ping:
+						this.send(data, OPCodes.Pong);
+						break;
+					case OPCodes.Frame:
+						if (!data) {
+							return;
+						}
+
+						if (data.cmd === RPCCommands.Authorize && data.evt !== RPCEvents.Error) {
+							findEndpoint()
+								.then((endpoint) => {
+									this.client.request.endpoint = endpoint;
+								})
+								.catch((error) => {
+									this.client.emit('error', error);
+								});
+						}
+
+						this.emit('message', data);
+						break;
+					case OPCodes.Close:
+						this.emit('close', data);
+						break;
+					default:
+						break;
+				}
+			});
+		});
 	}
-
 
 	public onClose(error: boolean) {
 		this.emit('close', error);
