@@ -53,4 +53,3 @@ export function createTsupConfig({
 export default createTsupConfig({
 	esbuildPlugins: [esbuildPluginVersionInjector()],
 });
-
