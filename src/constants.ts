@@ -18,6 +18,14 @@ export const RPCVersion = '1';
 /**
  * @unstable
  */
+export enum RPCCaptureShortcutAction {
+	Start = 'START',
+	Stop = 'STOP',
+}
+
+/**
+ * @unstable
+ */
 export type RPCLobbyMetadata = unknown;
 
 /**
@@ -280,6 +288,24 @@ export enum RelationshipType {
 	PendingIncoming,
 	PendingOutgoing,
 	Implicit,
+}
+
+/**
+ * @unstable
+ */
+export interface Relationship {
+	/**
+	 * the id of the user
+	 */
+	id: Snowflake;
+	/**
+	 * relationship type
+	 */
+	type: RelationshipType;
+	/**
+	 * user
+	 */
+	user: APIUser;
 }
 
 /**
@@ -724,13 +750,18 @@ export interface RPCAuthorizeArgs {
 	 */
 	rpc_token: string;
 	/**
+	 * @unstable Authorize Arguments doesn't document this field
+	 * https://discord.com/developers/docs/topics/oauth2#authorization-code-grant
+	 */
+	prompt?: 'consent' | 'none';
+	/**
 	 * scopes to authorize
 	 */
 	scopes: OAuth2Scopes[];
 	/**
 	 * 	username to create a guest account with if the user does not have Discord
 	 */
-	username: string;
+	username?: string;
 }
 
 /**
@@ -1184,7 +1215,9 @@ export interface RPCCaptureShortcutResultData {}
 /**
  * @unstable
  */
-export interface RPCCaptureShortcutArgs {}
+export interface RPCCaptureShortcutArgs {
+	action: RPCCaptureShortcutAction;
+}
 
 export interface RPCCloseActivityRequestResultData {}
 /**
@@ -1326,7 +1359,7 @@ export interface RPCGetNetworkingConfigArgs {}
 /**
  * @unstable
  */
-export interface RPCGetRelationshipsResultData {}
+export type RPCGetRelationshipsResultData = Relationship[];
 /**
  * @unstable
  */
@@ -1961,7 +1994,12 @@ export interface RPCActivitySpectateDispatchData {
  * @unstable
  */
 
-export interface RPCCaptureShortcutChangeDispatchData {}
+export interface RPCCaptureShortcutChangeDispatchData {
+	/**
+	 * the shortcut the user has pressed
+	 */
+	shortcut: string;
+}
 
 /**
  * https://discord.com/developers/docs/topics/rpc#channelcreate-channel-create-dispatch-data-structure
@@ -3505,6 +3543,7 @@ export interface MappedRPCCommandsResultsData {
 	[RPCCommands.Overlay]: RPCOverlayResultData;
 	[RPCCommands.SearchLobbies]: RPCSearchLobbiesResultData;
 	[RPCCommands.SendActivityJoinInvite]: RPCSendActivityJoinInviteResultData;
+	[RPCCommands.SendActivityJoinRequest]: RPCSendActivityJoinRequestResultData;
 	[RPCCommands.SendToLobby]: RPCSendToLobbyResultData;
 	[RPCCommands.SetCertifiedDevices]: RPCSetCertifiedDevicesResultData;
 	[RPCCommands.SetOverlayLocked]: RPCSetOverlayLockedResultData;
@@ -3664,3 +3703,9 @@ export interface MappedRPCEventsDispatchData {
 	[RPCEvents.VoiceStateDelete]: RPCVoiceStateDeleteDispatchData;
 	[RPCEvents.VoiceStateUpdate]: RPCVoiceStateUpdateDispatchData;
 }
+
+export type Nullable<T> = T | null | undefined;
+
+export type NullableFields<T> = {
+	[P in keyof T]: Nullable<T[P]>;
+};

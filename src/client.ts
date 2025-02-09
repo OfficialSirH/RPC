@@ -1,10 +1,19 @@
+import { REST } from '@discordjs/rest';
 import { AsyncEventEmitter } from '@vladfrangu/async_event_emitter';
-import type { APIApplication, APIUser, GatewayActivity, OAuth2Scopes, Snowflake } from 'discord-api-types/v10';
+import {
+	RESTPostOAuth2AccessTokenResult,
+	Routes,
+	type APIUser,
+	type OAuth2Scopes,
+	type Snowflake,
+} from 'discord-api-types/v10';
 import { randomUUID } from 'node:crypto';
 import { clearTimeout, setTimeout } from 'node:timers';
 import type {
 	LobbyType,
 	MappedRPCCommandsArgs,
+	MappedRPCCommandsResultsData,
+	NullableFields,
 	RPCCallableCommands,
 	RPCCertifiedDevice,
 	RPCGetChannelResultData,
@@ -14,17 +23,22 @@ import type {
 	RPCGetVoiceSettingsResultData,
 	RPCLobbyMetadata,
 	RPCMessage,
+	RPCOAuth2Application,
 	RPCSelectTextChannelArgs,
 	RPCSelectTextChannelResultData,
 	RPCSelectVoiceChannelArgs,
 	RPCSelectVoiceChannelResultData,
+	RPCSetActivityArgs,
 	RPCSetCertifiedDevicesResultData,
 	RPCSetUserVoiceSettingsArgs,
 	RPCSetUserVoiceSettingsResultData,
+	RPCSetVoiceSettingsArgs,
+	RPCSubscribeArgs,
 	RPCUpdateLobbyArgs,
 } from './constants';
-import { RPCCommands, RPCEvents, RelationshipType } from './constants';
+import { RPCCaptureShortcutAction, RPCCommands, RPCEvents } from './constants';
 import { IPCTransport } from './ipc';
+import { RPCEventError } from './RPCEventError';
 import { getPid } from './util';
 
 export interface RPCLoginOptions {
@@ -51,7 +65,11 @@ export interface RPCLoginOptions {
 
 export interface RPCAuthorizationOptions extends Partial<RPCLoginOptions> {}
 
-function subKey(event: RPCEvents, args: unknown) {
+export interface Oauth2RPCTokenExchangeResult {
+	rpc_token: string;
+}
+
+function subKey(event: RPCEvents, args?: RPCSubscribeArgs) {
 	return `${event}${JSON.stringify(args)}`;
 }
 
@@ -65,7 +83,7 @@ export class RPCClient extends AsyncEventEmitter {
 
 	public clientId: string | null;
 
-	public application: APIApplication | null;
+	public application: RPCOAuth2Application | null;
 
 	public user: APIUser | null;
 
@@ -83,6 +101,8 @@ export class RPCClient extends AsyncEventEmitter {
 	 * Promise for connection
 	 */
 	#connectPromise: Promise<RPCClient> | undefined;
+
+	#subscriptions: Map<string, Function> = new Map();
 
 	public constructor(options: Partial<RPCLoginOptions> = {}) {
 		super();
@@ -122,7 +142,7 @@ export class RPCClient extends AsyncEventEmitter {
 
 		this.transport.once('close', () => {
 			for (const exp_nonce of this.#expected_nonces.values()) {
-				exp_nonce.reject(new Error('connection closed'));
+				exp_nonce.reject(new RPCEventError('connection closed'));
 			}
 
 			this.emit('disconnected');
@@ -182,19 +202,21 @@ export class RPCClient extends AsyncEventEmitter {
 		args: MappedRPCCommandsArgs[Cmd] = {} as MappedRPCCommandsArgs[Cmd],
 		evt?: RPCEvents,
 	) {
-		return new Promise((resolve, reject) => {
-			const nonce = randomUUID();
-			const payload: { cmd: Cmd; args: MappedRPCCommandsArgs[Cmd]; nonce: string; evt?: RPCEvents } = {
-				cmd,
-				args,
-				nonce,
-			};
-			if (cmd === RPCCommands.Subscribe || cmd === RPCCommands.Unsubscribe) {
-				payload.evt = evt!;
-			}
-			this.transport.send({ cmd, args, evt, nonce });
-			this.#expected_nonces.set(nonce, { resolve, reject });
-		});
+		return new Promise(
+			(resolve: (value: MappedRPCCommandsResultsData[Cmd]) => void, reject: (reason: RPCEventError) => void) => {
+				const nonce = randomUUID();
+				const payload: { cmd: Cmd; args: MappedRPCCommandsArgs[Cmd]; nonce: string; evt?: RPCEvents } = {
+					cmd,
+					args,
+					nonce,
+				};
+				if (cmd === RPCCommands.Subscribe || cmd === RPCCommands.Unsubscribe) {
+					payload.evt = evt!;
+				}
+				this.transport.send({ cmd, args, evt, nonce });
+				this.#expected_nonces.set(nonce, { resolve, reject });
+			},
+		);
 	}
 
 	/**
@@ -215,9 +237,7 @@ export class RPCClient extends AsyncEventEmitter {
 			}
 			const { resolve, reject } = this.#expected_nonces.get(message.nonce)!;
 			if ('evt' in message && message.evt === RPCEvents.Error) {
-				const e = new Error(message.data.message);
-				e.code = message.data.code;
-				e.data = message.data;
+				const e = new RPCEventError(message.data);
 				reject(e);
 			} else {
 				resolve(message.data);
@@ -241,32 +261,34 @@ export class RPCClient extends AsyncEventEmitter {
 		redirectUri,
 		prompt,
 	}: Partial<RPCLoginOptions> = {}): Promise<string> {
-		if (clientSecret && rpcToken === true) {
-			const body = await this.fetch('POST', '/oauth2/token/rpc', {
-				data: new URLSearchParams({
-					client_id: this.clientId,
+		const rest = new REST().setToken(this.accessToken!);
+
+		if (clientSecret) {
+			const response = (await rest.post(`${Routes.oauth2TokenExchange()}/rpc`, {
+				body: new URLSearchParams({
+					client_id: this.clientId!,
 					client_secret: clientSecret,
 				}),
-			});
-			rpcToken = body.rpc_token;
+			})) as Oauth2RPCTokenExchangeResult;
+			rpcToken = response.rpc_token;
 		}
 
 		const { code } = await this.#request(RPCCommands.Authorize, {
-			scopes,
-			client_id: this.clientId,
-			prompt,
-			rpc_token: rpcToken,
+			scopes: scopes!,
+			client_id: this.clientId!,
+			prompt: prompt!,
+			rpc_token: rpcToken!,
 		});
 
-		const response = await this.fetch('POST', '/oauth2/token', {
-			data: new URLSearchParams({
-				client_id: this.clientId,
-				client_secret: clientSecret,
+		const response = (await rest.post(Routes.oauth2TokenExchange(), {
+			body: new URLSearchParams({
+				client_id: this.clientId!,
+				client_secret: clientSecret!,
 				code,
 				grant_type: 'authorization_code',
-				redirect_uri: redirectUri,
+				redirect_uri: redirectUri!,
 			}),
-		});
+		})) as RESTPostOAuth2AccessTokenResult;
 
 		return response.access_token;
 	}
@@ -320,7 +342,7 @@ export class RPCClient extends AsyncEventEmitter {
 	 *
 	 * @param id Guild Id
 	 */
-	async getChannels(id: Snowflake): Promise<RPCGetChannelsResultData> {
+	async getChannels(id: Snowflake): Promise<RPCGetChannelsResultData['channels']> {
 		const { channels } = await this.#request(RPCCommands.GetChannels, { guild_id: id });
 		return channels;
 	}
@@ -405,39 +427,10 @@ export class RPCClient extends AsyncEventEmitter {
 	 * Set current voice settings, overriding the current settings until this session disconnects.
 	 * This also locks the settings for any other rpc sessions which may be connected.
 	 *
-	 * @param {object} args Settings
+	 * @param args Settings
 	 */
-	async setVoiceSettings(args: object): Promise<unknown> {
-		return this.#request(RPCCommands.SetVoiceSettings, {
-			automatic_gain_control: args.automaticGainControl,
-			echo_cancellation: args.echoCancellation,
-			noise_suppression: args.noiseSuppression,
-			qos: args.qos,
-			silence_warning: args.silenceWarning,
-			deaf: args.deaf,
-			mute: args.mute,
-			input: args.input
-				? {
-						device_id: args.input.device,
-						volume: args.input.volume,
-					}
-				: undefined,
-			output: args.output
-				? {
-						device_id: args.output.device,
-						volume: args.output.volume,
-					}
-				: undefined,
-			mode: args.mode
-				? {
-						type: args.mode.type,
-						auto_threshold: args.mode.autoThreshold,
-						threshold: args.mode.threshold,
-						shortcut: args.mode.shortcut,
-						delay: args.mode.delay,
-					}
-				: undefined,
-		});
+	async setVoiceSettings(args: RPCSetVoiceSettingsArgs): Promise<unknown> {
+		return this.#request(RPCCommands.SetVoiceSettings, args);
 	}
 
 	/**
@@ -451,16 +444,16 @@ export class RPCClient extends AsyncEventEmitter {
 	 * @returns {Promise<Function>}
 	 */
 	async captureShortcut(callback: Function): Promise<Function> {
-		const subid = subKey(RPCEvents.CaptureShortcutChange, {});
+		const subid = subKey(RPCEvents.CaptureShortcutChange);
 		const stop = async () => {
-			this._subscriptions.delete(subid);
-			return this.#request(RPCCommands.CaptureShortcut, { action: 'STOP' });
+			this.#subscriptions.delete(subid);
+			return this.#request(RPCCommands.CaptureShortcut, { action: RPCCaptureShortcutAction.Stop });
 		};
 
-		this._subscriptions.set(subid, ({ shortcut }) => {
+		this.#subscriptions.set(subid, ({ shortcut }: { shortcut: unknown }) => {
 			callback(shortcut, stop);
 		});
-		return this.#request(RPCCommands.CaptureShortcut, { action: 'START' }).then(() => stop);
+		return this.#request(RPCCommands.CaptureShortcut, { action: RPCCaptureShortcutAction.Start }).then(() => stop);
 	}
 
 	/**
@@ -469,69 +462,40 @@ export class RPCClient extends AsyncEventEmitter {
 	 * @param args The rich presence to pass.
 	 * @param pid The application's process ID. Defaults to the executing process' PID.
 	 */
-	public async setActivity(args: Partial<GatewayActivity> = {}, pid: number | null = getPid()): Promise<unknown> {
-		let timestamps;
-		let assets;
-		let party;
-		let secrets;
-		if (args.startTimestamp || args.endTimestamp) {
-			timestamps = {
-				start: args.startTimestamp,
-				end: args.endTimestamp,
-			};
-			if (timestamps.start instanceof Date) {
-				timestamps.start = Math.round(timestamps.start.getTime());
-			}
+	public async setActivity(args: RPCSetActivityArgs['activity'] = {}, pid: number | null = getPid()): Promise<unknown> {
+		const newActivity: NullableFields<RPCSetActivityArgs['activity']> = {
+			details: args.details,
+			state: args.state,
+			instance: Boolean(args.instance),
+			buttons: args?.buttons,
+		};
 
-			if (timestamps.end instanceof Date) {
-				timestamps.end = Math.round(timestamps.end.getTime());
-			}
-
-			if (timestamps.start > 2_147_483_647_000) {
+		if (args.timestamps) {
+			newActivity.timestamps = args.timestamps;
+			if ('start' in newActivity.timestamps && newActivity.timestamps.start > 2_147_483_647_000) {
 				throw new RangeError('timestamps.start must fit into a unix timestamp');
 			}
 
-			if (timestamps.end > 2_147_483_647_000) {
+			if ('end' in newActivity.timestamps && newActivity.timestamps.end > 2_147_483_647_000) {
 				throw new RangeError('timestamps.end must fit into a unix timestamp');
 			}
 		}
 
-		if (args.largeImageKey || args.largeImageText || args.smallImageKey || args.smallImageText) {
-			assets = {
-				large_image: args.largeImageKey,
-				large_text: args.largeImageText,
-				small_image: args.smallImageKey,
-				small_text: args.smallImageText,
-			};
+		if ('assets' in args) {
+			newActivity.assets = args.assets;
 		}
 
-		if (args.partySize || args.partyId || args.partyMax) {
-			party = { id: args.partyId };
-			if (args.partySize || args.partyMax) {
-				party.size = [args.partySize, args.partyMax];
-			}
+		if ('party' in args) {
+			newActivity.party = args.party;
 		}
 
-		if (args.matchSecret || args.joinSecret || args.spectateSecret) {
-			secrets = {
-				match: args.matchSecret,
-				join: args.joinSecret,
-				spectate: args.spectateSecret,
-			};
+		if ('secrets' in args) {
+			newActivity.secrets = args.secrets;
 		}
 
 		return this.#request(RPCCommands.SetActivity, {
 			pid: pid ?? 0,
-			activity: {
-				state: args.state,
-				details: args.details,
-				timestamps,
-				assets,
-				party,
-				secrets,
-				buttons: args.buttons,
-				instance: Boolean(args.instance),
-			},
+			activity: newActivity as Exclude<RPCSetActivityArgs['activity'], undefined>,
 		});
 	}
 
@@ -680,13 +644,7 @@ export class RPCClient extends AsyncEventEmitter {
 	 * @unstable
 	 */
 	public async getRelationships() {
-		const types = Object.keys(RelationshipType);
-		return this.#request(RPCCommands.GetRelationships).then((o) =>
-			o.relationships.map((r) => ({
-				...r,
-				type: types[r.type],
-			})),
-		);
+		return this.#request(RPCCommands.GetRelationships);
 	}
 
 	/**

@@ -1,11 +1,11 @@
+import { AsyncEventEmitter } from '@vladfrangu/async_event_emitter';
 import { Buffer } from 'node:buffer';
 import { randomUUID } from 'node:crypto';
 import { realpath } from 'node:fs/promises';
 import { createConnection, type Socket } from 'node:net';
 import process from 'node:process';
-import { AsyncEventEmitter } from '@vladfrangu/async_event_emitter';
 import type { RPCClient } from './client';
-import { RPCCommands, RPCEvents } from './constants';
+import { RPCMessagePayload } from './constants';
 
 enum OPCodes {
 	Handshake,
@@ -51,25 +51,25 @@ async function getIPC(id = 0): Promise<Socket> {
 	return promise;
 }
 
-async function findEndpoint(tries = 0): Promise<string> {
-	if (tries > 30) {
-		throw new Error('Could not find endpoint');
-	}
+// async function findEndpoint(tries = 0): Promise<string> {
+// 	if (tries > 30) {
+// 		throw new Error('Could not find endpoint');
+// 	}
 
-	const endpoint = `http://127.0.0.1:${6_463 + (tries % 10)}`;
+// 	const endpoint = `http://127.0.0.1:${6_463 + (tries % 10)}`;
 
-	try {
-		const response = await fetch(endpoint);
+// 	try {
+// 		const response = await fetch(endpoint);
 
-		if (response.status === 404) return endpoint;
+// 		if (response.status === 404) return endpoint;
 
-		return await findEndpoint(tries + 1);
-	} catch {
-		return findEndpoint(tries + 1);
-	}
-}
+// 		return await findEndpoint(tries + 1);
+// 	} catch {
+// 		return findEndpoint(tries + 1);
+// 	}
+// }
 
-export function encode(op: number, data: RPCPayload) {
+export function encode(op: number, data: RPCMessagePayload | string | {}) {
 	const stringifiedData = JSON.stringify(data);
 	const length = Buffer.byteLength(stringifiedData);
 	const packet = Buffer.alloc(8 + length);
@@ -91,7 +91,7 @@ const working: WorkingData = {
 	op: undefined,
 };
 
-export function decode(socket, callback) {
+export function decode(socket: Socket, callback: (data: { op: OPCodes; data: RPCMessagePayload }) => void) {
 	const packet = socket.read();
 	if (!packet) {
 		return;
@@ -109,7 +109,7 @@ export function decode(socket, callback) {
 
 	try {
 		const data = JSON.parse(working.full + raw);
-		callback({ op, data });
+		callback({ op: op!, data });
 		working.full = '';
 		working.op = undefined;
 	} catch {
@@ -158,15 +158,15 @@ export class IPCTransport extends AsyncEventEmitter {
 							return;
 						}
 
-						if (data.cmd === RPCCommands.Authorize && data.evt !== RPCEvents.Error) {
-							findEndpoint()
-								.then((endpoint) => {
-									this.client.request.endpoint = endpoint;
-								})
-								.catch((error) => {
-									this.client.emit('error', error);
-								});
-						}
+						// if (data.cmd === RPCCommands.Authorize && !('evt' in data)) {
+						// 	findEndpoint()
+						// 		.then((endpoint) => {
+						// 			this.client.request.endpoint = endpoint;
+						// 		})
+						// 		.catch((error) => {
+						// 			this.client.emit('error', error);
+						// 		});
+						// }
 
 						this.emit('message', data);
 						break;
@@ -184,7 +184,7 @@ export class IPCTransport extends AsyncEventEmitter {
 		this.emit('close', error);
 	}
 
-	public send(data: RPCPayload, op = OPCodes.Frame) {
+	public send(data: RPCMessagePayload | string | {}, op = OPCodes.Frame) {
 		this.socket!.write(encode(op, data));
 	}
 
