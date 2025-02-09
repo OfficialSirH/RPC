@@ -15,6 +15,11 @@ enum OPCodes {
 	Pong,
 }
 
+interface HandshakePayload {
+	v: number;
+	client_id: string;
+}
+
 async function getIPCPath(id: number) {
 	if (process.platform === 'win32') {
 		return `\\\\?\\pipe\\discord-ipc-${id}`;
@@ -69,7 +74,7 @@ async function getIPC(id = 0): Promise<Socket> {
 // 	}
 // }
 
-export function encode(op: number, data: RPCMessagePayload | string | {}) {
+export function encode(op: number, data: RPCMessagePayload | string | HandshakePayload | Record<string, never>) {
 	const stringifiedData = JSON.stringify(data);
 	const length = Buffer.byteLength(stringifiedData);
 	const packet = Buffer.alloc(8 + length);
@@ -141,7 +146,7 @@ export class IPCTransport extends AsyncEventEmitter {
 		socket.write(
 			encode(OPCodes.Handshake, {
 				v: 1,
-				client_id: this.client.clientId,
+				client_id: this.client.clientId!,
 			}),
 		);
 
@@ -184,7 +189,10 @@ export class IPCTransport extends AsyncEventEmitter {
 		this.emit('close', error);
 	}
 
-	public send(data: RPCMessagePayload | string | {}, op = OPCodes.Frame) {
+	public send(data: string, op: OPCodes.Ping): void;
+	public send(data: RPCMessagePayload, op?: OPCodes.Frame | OPCodes.Pong): void;
+	public send(data: Record<string, never>, op: OPCodes.Close): void;
+	public send(data: RPCMessagePayload | string | Record<string, never>, op = OPCodes.Frame) {
 		this.socket!.write(encode(op, data));
 	}
 

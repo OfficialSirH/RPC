@@ -22,6 +22,7 @@ import type {
 	RPCGetVoiceSettingsResultData,
 	RPCLobbyMetadata,
 	RPCMessage,
+	RPCMessagePayload,
 	RPCOAuth2Application,
 	RPCSelectTextChannelArgs,
 	RPCSelectTextChannelResultData,
@@ -213,7 +214,7 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 				if (cmd === RPCCommands.Subscribe || cmd === RPCCommands.Unsubscribe) {
 					payload.evt = evt!;
 				}
-				this.transport.send({ cmd, args, evt, nonce });
+				this.transport.send(payload as RPCMessagePayload);
 				this.#expected_nonces.set(nonce, { resolve, reject });
 			},
 		);
