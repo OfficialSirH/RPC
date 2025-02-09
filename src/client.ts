@@ -1,8 +1,6 @@
-import { REST } from '@discordjs/rest';
 import { AsyncEventEmitter } from '@vladfrangu/async_event_emitter';
 import {
 	RESTPostOAuth2AccessTokenResult,
-	Routes,
 	type APIUser,
 	type OAuth2Scopes,
 	type Snowflake,
@@ -35,6 +33,7 @@ import type {
 	RPCSetUserVoiceSettingsResultData,
 	RPCSetVoiceSettingsArgs,
 	RPCSubscribeArgs,
+	RPCUnsubscribeResultData,
 	RPCUpdateLobbyArgs,
 } from './constants.js';
 import { RPCCaptureShortcutAction, RPCCommands, RPCEvents } from './constants.js';
@@ -262,15 +261,23 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 		redirectUri,
 		prompt,
 	}: Partial<RPCLoginOptions> = {}): Promise<string> {
-		const rest = new REST();
+		// TODO: lol, fix authorization issues
+		// const rest = new REST();
 
 		if (clientSecret) {
-			const response = (await rest.post(`${Routes.oauth2TokenExchange()}/rpc`, {
+			// const response = (await rest.post(`${Routes.oauth2TokenExchange()}/rpc`, {
+			// 	body: new URLSearchParams({
+			// 		client_id: this.clientId!,
+			// 		client_secret: clientSecret,
+			// 	}),
+			// })) as Oauth2RPCTokenExchangeResult;
+			const response = (await fetch(`https://discord.com/api/oauth2/token/rpc`, {
+				method: 'POST',
 				body: new URLSearchParams({
 					client_id: this.clientId!,
 					client_secret: clientSecret,
 				}),
-			})) as Oauth2RPCTokenExchangeResult;
+			}).then((res) => res.json())) as Oauth2RPCTokenExchangeResult;
 			rpcToken = response.rpc_token;
 		}
 
@@ -281,7 +288,17 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 			rpc_token: rpcToken!,
 		});
 
-		const response = (await rest.post(Routes.oauth2TokenExchange(), {
+		// const response = (await rest.post(Routes.oauth2TokenExchange(), {
+		// 	body: new URLSearchParams({
+		// 		client_id: this.clientId!,
+		// 		client_secret: clientSecret!,
+		// 		code,
+		// 		grant_type: 'authorization_code',
+		// 		redirect_uri: redirectUri!,
+		// 	}),
+		// })) as RESTPostOAuth2AccessTokenResult;
+		const response = (await fetch(`https://discord.com/api/oauth2/token`, {
+			method: 'POST',
 			body: new URLSearchParams({
 				client_id: this.clientId!,
 				client_secret: clientSecret!,
@@ -289,7 +306,7 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 				grant_type: 'authorization_code',
 				redirect_uri: redirectUri!,
 			}),
-		})) as RESTPostOAuth2AccessTokenResult;
+		}).then((res) => res.json())) as RESTPostOAuth2AccessTokenResult;
 
 		return response.access_token;
 	}
@@ -654,7 +671,10 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	 * @param event - Name of event e.g. `MESSAGE_CREATE`
 	 * @param args - Args for event e.g. `{ channel_id: '1234' }`
 	 */
-	public async subscribe(event: RPCEvents, args: object): Promise<object> {
+	public async subscribe<Evt extends RPCEvents>(
+		event: Evt,
+		args?: RPCSubscribeArgs,
+	): Promise<{ unsubscribe: () => Promise<RPCUnsubscribeResultData> }> {
 		await this.#request(RPCCommands.Subscribe, args, event);
 		return {
 			unsubscribe: async () => this.#request(RPCCommands.Unsubscribe, args, event),
