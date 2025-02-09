@@ -1,8 +1,28 @@
 import { AsyncEventEmitter } from '@vladfrangu/async_event_emitter';
-import type { APIApplication, APIUser, OAuth2Scopes, Snowflake } from 'discord-api-types/v10';
+import type { APIApplication, APIUser, GatewayActivity, OAuth2Scopes, Snowflake } from 'discord-api-types/v10';
 import { randomUUID } from 'node:crypto';
 import { clearTimeout, setTimeout } from 'node:timers';
-import type { MappedRPCCommandsArgs, RPCCallableCommands, RPCMessage } from './constants';
+import type {
+	LobbyType,
+	MappedRPCCommandsArgs,
+	RPCCallableCommands,
+	RPCCertifiedDevice,
+	RPCGetChannelResultData,
+	RPCGetChannelsResultData,
+	RPCGetGuildResultData,
+	RPCGetGuildsResultData,
+	RPCGetVoiceSettingsResultData,
+	RPCLobbyMetadata,
+	RPCMessage,
+	RPCSelectTextChannelArgs,
+	RPCSelectTextChannelResultData,
+	RPCSelectVoiceChannelArgs,
+	RPCSelectVoiceChannelResultData,
+	RPCSetCertifiedDevicesResultData,
+	RPCSetUserVoiceSettingsArgs,
+	RPCSetUserVoiceSettingsResultData,
+	RPCUpdateLobbyArgs,
+} from './constants';
 import { RPCCommands, RPCEvents, RelationshipType } from './constants';
 import { IPCTransport } from './ipc';
 import { getPid } from './util';
@@ -159,7 +179,7 @@ export class RPCClient extends AsyncEventEmitter {
 	 */
 	async #request<Cmd extends RPCCallableCommands = RPCCallableCommands>(
 		cmd: Cmd,
-		args: MappedRPCCommandsArgs[Cmd],
+		args: MappedRPCCommandsArgs[Cmd] = {} as MappedRPCCommandsArgs[Cmd],
 		evt?: RPCEvents,
 	) {
 		return new Promise((resolve, reject) => {
@@ -182,16 +202,19 @@ export class RPCClient extends AsyncEventEmitter {
 	 *
 	 * @param message - message
 	 */
-	#onRpcMessage(message: RPCMessage) {
+	#onRpcMessage(message: RPCMessage): void {
 		if (message.cmd === RPCCommands.Dispatch && message.evt === RPCEvents.Ready) {
 			if (message.data.user) {
 				this.user = message.data.user;
 			}
 
 			this.emit('connected');
-		} else if (message.cmd !== RPCCommands.Dispatch && this.#expected_nonces.has(message.nonce)) {
+		} else if (message.cmd !== RPCCommands.Dispatch) {
+			if (!this.#expected_nonces.has(message.nonce)) {
+				return;
+			}
 			const { resolve, reject } = this.#expected_nonces.get(message.nonce)!;
-			if (message.evt === RPCEvents.Error) {
+			if ('evt' in message && message.evt === RPCEvents.Error) {
 				const e = new Error(message.data.message);
 				e.code = message.data.code;
 				e.data = message.data;
@@ -217,7 +240,7 @@ export class RPCClient extends AsyncEventEmitter {
 		rpcToken,
 		redirectUri,
 		prompt,
-	}: Partial<RPCLoginOptions> = {}): Promise<any> {
+	}: Partial<RPCLoginOptions> = {}): Promise<string> {
 		if (clientSecret && rpcToken === true) {
 			const body = await this.fetch('POST', '/oauth2/token/rpc', {
 				data: new URLSearchParams({
@@ -251,11 +274,10 @@ export class RPCClient extends AsyncEventEmitter {
 	/**
 	 * Authenticate
 	 *
-	 * @param {string} accessToken access token
-	 * @returns {Promise}
+	 * @param accessToken access token
 	 * @private
 	 */
-	async authenticate(accessToken: string): Promise<any> {
+	async authenticate(accessToken: string): Promise<this> {
 		return this.#request(RPCCommands.Authenticate, { access_token: accessToken }).then(({ application, user }) => {
 			this.accessToken = accessToken;
 			this.application = application;
@@ -268,176 +290,115 @@ export class RPCClient extends AsyncEventEmitter {
 	/**
 	 * Fetch a guild
 	 *
-	 * @param {Snowflake} id Guild ID
-	 * @param {number} [timeout] Timeout request
-	 * @returns {Promise<Guild>}
+	 * @param id Guild Id
+	 * @param timeout Timeout request
 	 */
-	async getGuild(id: Snowflake, timeout: number): Promise<Guild> {
+	async getGuild(id: Snowflake, timeout: number): Promise<RPCGetGuildResultData> {
 		return this.#request(RPCCommands.GetGuild, { guild_id: id, timeout });
 	}
 
 	/**
 	 * Fetch all guilds
 	 *
-	 * @param {number} [timeout] Timeout request
-	 * @returns {Promise<Collection<Snowflake, Guild>>}
+	 * @param timeout Timeout request
 	 */
-	async getGuilds(timeout: number): Promise<Collection<Snowflake, Guild>> {
+	async getGuilds(timeout: number): Promise<RPCGetGuildsResultData> {
 		return this.#request(RPCCommands.GetGuilds, { timeout });
 	}
 
 	/**
 	 * Get a channel
 	 *
-	 * @param {Snowflake} id Channel ID
-	 * @param {number} [timeout] Timeout request
-	 * @returns {Promise<Channel>}
+	 * @param id Channel Id
 	 */
-	async getChannel(id: Snowflake, timeout: number): Promise<Channel> {
-		return this.#request(RPCCommands.GetChannel, { channel_id: id, timeout });
+	async getChannel(id: Snowflake): Promise<RPCGetChannelResultData> {
+		return this.#request(RPCCommands.GetChannel, { channel_id: id });
 	}
 
 	/**
 	 * Get all channels
 	 *
-	 * @param {Snowflake} [id] Guild ID
-	 * @param {number} [timeout] Timeout request
-	 * @returns {Promise<Collection<Snowflake, Channel>>}
+	 * @param id Guild Id
 	 */
-	async getChannels(id: Snowflake, timeout: number): Promise<Collection<Snowflake, Channel>> {
-		const { channels } = await this.#request(RPCCommands.GetChannels, {
-			timeout,
-			guild_id: id,
-		});
+	async getChannels(id: Snowflake): Promise<RPCGetChannelsResultData> {
+		const { channels } = await this.#request(RPCCommands.GetChannels, { guild_id: id });
 		return channels;
 	}
 
 	/**
-	 * @typedef {CertifiedDevice}
-	 * @prop {string} type One of `AUDIO_INPUT`, `AUDIO_OUTPUT`, `VIDEO_INPUT`
-	 * @prop {string} uuid This device's Windows UUID
-	 * @prop {object} vendor Vendor information
-	 * @prop {string} vendor.name Vendor's name
-	 * @prop {string} vendor.url Vendor's url
-	 * @prop {object} model Model information
-	 * @prop {string} model.name Model's name
-	 * @prop {string} model.url Model's url
-	 * @prop {string[]} related Array of related product's Windows UUIDs
-	 * @prop {boolean} echoCancellation If the device has echo cancellation
-	 * @prop {boolean} noiseSuppression If the device has noise suppression
-	 * @prop {boolean} automaticGainControl If the device has automatic gain control
-	 * @prop {boolean} hardwareMute If the device has a hardware mute
-	 */
-
-	/**
 	 * Tell discord which devices are certified
 	 *
-	 * @param {CertifiedDevice[]} devices Certified devices to send to discord
-	 * @returns {Promise}
+	 * @param devices Certified devices to send to discord
 	 */
-	async setCertifiedDevices(devices: CertifiedDevice[]): Promise<any> {
+	async setCertifiedDevices(devices: RPCCertifiedDevice[]): Promise<RPCSetCertifiedDevicesResultData> {
 		return this.#request(RPCCommands.SetCertifiedDevices, {
-			devices: devices.map((d) => ({
-				type: d.type,
-				id: d.uuid,
-				vendor: d.vendor,
-				model: d.model,
-				related: d.related,
-				echo_cancellation: d.echoCancellation,
-				noise_suppression: d.noiseSuppression,
-				automatic_gain_control: d.automaticGainControl,
-				hardware_mute: d.hardwareMute,
-			})),
+			devices,
 		});
 	}
 
 	/**
-	 * @typedef {UserVoiceSettings}
-	 * @prop {Snowflake} id ID of the user these settings apply to
-	 * @prop {?object} [pan] Pan settings, an object with `left` and `right` set between
-	 * 0.0 and 1.0, inclusive
-	 * @prop {?number} [volume=100] The volume
-	 * @prop {bool} [mute] If the user is muted
-	 */
-
-	/**
 	 * Set the voice settings for a user, by id
 	 *
-	 * @param {Snowflake} id ID of the user to set
-	 * @param {UserVoiceSettings} settings Settings
-	 * @returns {Promise}
+	 * @param id Id of the user to set
+	 * @param settings Settings to set
 	 */
-	async setUserVoiceSettings(id: Snowflake, settings: UserVoiceSettings): Promise<any> {
+	async setUserVoiceSettings(
+		id: Snowflake,
+		settings: Omit<Partial<RPCSetUserVoiceSettingsArgs>, 'user_id'>,
+	): Promise<RPCSetUserVoiceSettingsResultData> {
 		return this.#request(RPCCommands.SetUserVoiceSettings, {
 			user_id: id,
-			pan: settings.pan,
-			mute: settings.mute,
-			volume: settings.volume,
+			...settings,
 		});
 	}
 
 	/**
 	 * Move the user to a voice channel
 	 *
-	 * @param {Snowflake} id ID of the voice channel
-	 * @param {object} [options] Options
-	 * @param {number} [options.timeout] Timeout for the command
-	 * @param {boolean} [options.force] Force this move. This should only be done if you
+	 * @param id Id of the voice channel
+	 * @param options Options
+	 * @param options.timeout Timeout for the command
+	 * @param options.force Force this move. This should only be done if you
+	 *
 	 * have explicit permission from the user.
-	 * @returns {Promise}
 	 */
 	async selectVoiceChannel(
 		id: Snowflake,
-		{ timeout, force = false }: { force?: boolean; timeout?: number } = {},
-	): Promise<any> {
-		return this.#request(RPCCommands.SelectVoiceChannel, { channel_id: id, timeout, force });
+		{ timeout, force = false }: Omit<RPCSelectVoiceChannelArgs, 'channel_id'> = {},
+	): Promise<RPCSelectVoiceChannelResultData> {
+		const args: RPCSelectVoiceChannelArgs = { channel_id: id, force };
+		if (timeout) {
+			args.timeout = timeout;
+		}
+		return this.#request(RPCCommands.SelectVoiceChannel, args);
 	}
 
 	/**
 	 * Move the user to a text channel
 	 *
-	 * @param {Snowflake} id ID of the voice channel
-	 * @param {object} [options] Options
-	 * @param {number} [options.timeout] Timeout for the command
+	 * @param id Id of the voice channel
+	 * @param options Options
+	 * @param options.timeout Timeout for the command
+	 *
 	 * have explicit permission from the user.
-	 * @returns {Promise}
 	 */
-	async selectTextChannel(id: Snowflake, { timeout }: { timeout?: number } = {}): Promise<any> {
-		return this.#request(RPCCommands.SelectTextChannel, { channel_id: id, timeout });
+	async selectTextChannel(
+		id: Snowflake,
+		{ timeout }: Omit<RPCSelectTextChannelArgs, 'channel_id'> = {},
+	): Promise<RPCSelectTextChannelResultData> {
+		const args: RPCSelectTextChannelArgs = { channel_id: id };
+		if (timeout) {
+			args.timeout = timeout;
+		}
+		return this.#request(RPCCommands.SelectTextChannel, args);
 	}
 
 	/**
 	 * Get current voice settings
 	 *
-	 * @returns {Promise}
 	 */
-	async getVoiceSettings(): Promise<any> {
-		return this.#request(RPCCommands.GetVoiceSettings).then((s) => ({
-			automaticGainControl: s.automatic_gain_control,
-			echoCancellation: s.echo_cancellation,
-			noiseSuppression: s.noise_suppression,
-			qos: s.qos,
-			silenceWarning: s.silence_warning,
-			deaf: s.deaf,
-			mute: s.mute,
-			input: {
-				availableDevices: s.input.available_devices,
-				device: s.input.device_id,
-				volume: s.input.volume,
-			},
-			output: {
-				availableDevices: s.output.available_devices,
-				device: s.output.device_id,
-				volume: s.output.volume,
-			},
-			mode: {
-				type: s.mode.type,
-				autoThreshold: s.mode.auto_threshold,
-				threshold: s.mode.threshold,
-				shortcut: s.mode.shortcut,
-				delay: s.mode.delay,
-			},
-		}));
+	async getVoiceSettings(): Promise<RPCGetVoiceSettingsResultData> {
+		return this.#request(RPCCommands.GetVoiceSettings);
 	}
 
 	/**
@@ -445,9 +406,8 @@ export class RPCClient extends AsyncEventEmitter {
 	 * This also locks the settings for any other rpc sessions which may be connected.
 	 *
 	 * @param {object} args Settings
-	 * @returns {Promise}
 	 */
-	async setVoiceSettings(args: object): Promise<any> {
+	async setVoiceSettings(args: object): Promise<unknown> {
 		return this.#request(RPCCommands.SetVoiceSettings, {
 			automatic_gain_control: args.automaticGainControl,
 			echo_cancellation: args.echoCancellation,
@@ -481,6 +441,7 @@ export class RPCClient extends AsyncEventEmitter {
 	}
 
 	/**
+	 * @unstable
 	 * Capture a shortcut using the client
 	 * The callback takes (key, stop) where `stop` is a function that will stop capturing.
 	 * This `stop` function must be called before disconnecting or else the user will have
@@ -490,7 +451,7 @@ export class RPCClient extends AsyncEventEmitter {
 	 * @returns {Promise<Function>}
 	 */
 	async captureShortcut(callback: Function): Promise<Function> {
-		const subid = subKey(RPCEvents.CaptureShortcutChange);
+		const subid = subKey(RPCEvents.CaptureShortcutChange, {});
 		const stop = async () => {
 			this._subscriptions.delete(subid);
 			return this.#request(RPCCommands.CaptureShortcut, { action: 'STOP' });
@@ -505,11 +466,10 @@ export class RPCClient extends AsyncEventEmitter {
 	/**
 	 * Sets the presence for the logged in user.
 	 *
-	 * @param {object} args The rich presence to pass.
-	 * @param {number} [pid] The application's process ID. Defaults to the executing process' PID.
-	 * @returns {Promise}
+	 * @param args The rich presence to pass.
+	 * @param pid The application's process ID. Defaults to the executing process' PID.
 	 */
-	public async setActivity(args: object = {}, pid: number | null = getPid()): Promise<any> {
+	public async setActivity(args: Partial<GatewayActivity> = {}, pid: number | null = getPid()): Promise<unknown> {
 		let timestamps;
 		let assets;
 		let party;
@@ -582,7 +542,7 @@ export class RPCClient extends AsyncEventEmitter {
 	 * @param {number} [pid] The application's process ID. Defaults to the executing process' PID.
 	 * @returns {Promise}
 	 */
-	public async clearActivity(pid: number | null = getPid()): Promise<any> {
+	public async clearActivity(pid: number | null = getPid()): Promise<unknown> {
 		return this.#request(RPCCommands.SetActivity, {
 			pid: pid ?? 0,
 		});
@@ -591,40 +551,45 @@ export class RPCClient extends AsyncEventEmitter {
 	/**
 	 * Invite a user to join the game the RPC user is currently playing
 	 *
-	 * @param {User} user The user to invite
-	 * @returns {Promise}
+	 * @param userId The id of the user to invite
 	 */
-	public async sendJoinInvite(user: User): Promise<any> {
+	public async sendJoinInvite(userId: Snowflake): Promise<unknown> {
 		return this.#request(RPCCommands.SendActivityJoinInvite, {
-			user_id: user.id || user,
+			user_id: userId,
 		});
 	}
 
 	/**
 	 * Request to join the game the user is playing
 	 *
-	 * @param {User} user The user whose game you want to request to join
+	 * @param userId The id of the user whose game you want to request to join
 	 * @returns {Promise}
 	 */
-	public async sendJoinRequest(user: User): Promise<any> {
+	public async sendJoinRequest(userId: Snowflake): Promise<unknown> {
 		return this.#request(RPCCommands.SendActivityJoinRequest, {
-			user_id: user.id || user,
+			user_id: userId,
 		});
 	}
 
 	/**
 	 * Reject a join request from a user
 	 *
-	 * @param {User} user The user whose request you wish to reject
-	 * @returns {Promise}
+	 * @param userId The id of the user whose request you wish to reject
 	 */
-	public async closeJoinRequest(user: User): Promise<any> {
+	public async closeJoinRequest(userId: Snowflake): Promise<unknown> {
 		return this.#request(RPCCommands.CloseActivityRequest, {
-			user_id: user.id || user,
+			user_id: userId,
 		});
 	}
 
-	public async createLobby(type, capacity, metadata) {
+	/**
+	 * @unstable
+	 * @param type
+	 * @param capacity
+	 * @param metadata
+	 * @returns
+	 */
+	public async createLobby(type: LobbyType, capacity: number, metadata: RPCLobbyMetadata) {
 		return this.#request(RPCCommands.CreateLobby, {
 			type,
 			capacity,
@@ -632,50 +597,88 @@ export class RPCClient extends AsyncEventEmitter {
 		});
 	}
 
-	public async updateLobby(lobby, { type, owner, capacity, metadata } = {}) {
+	/**
+	 * @unstable
+	 * @param id lobby id
+	 * @param updateLobbyArgs arguments to update the lobby
+	 * @returns
+	 */
+	public async updateLobby(
+		id: string,
+		{ type, owner_id, capacity, metadata }: Omit<RPCUpdateLobbyArgs, 'id'> = {} as RPCUpdateLobbyArgs,
+	) {
 		return this.#request(RPCCommands.UpdateLobby, {
-			id: lobby.id || lobby,
+			id,
 			type,
-			owner_id: owner?.id || owner,
+			owner_id,
 			capacity,
 			metadata,
 		});
 	}
 
-	public async deleteLobby(lobby) {
+	/**
+	 * @unstable
+	 * @param id lobby id
+	 * @returns deleted lobby
+	 */
+	public async deleteLobby(id: string) {
 		return this.#request(RPCCommands.DeleteLobby, {
-			id: lobby.id || lobby,
+			id,
 		});
 	}
 
-	public async connectToLobby(id, secret) {
+	/**
+	 * @unstable
+	 * @param id lobby id
+	 * @param secret secret to access the lobby
+	 * @returns connected lobby
+	 */
+	public async connectToLobby(id: string, secret: string) {
 		return this.#request(RPCCommands.ConnectToLobby, {
 			id,
 			secret,
 		});
 	}
 
-	public async sendToLobby(lobby, data) {
+	/**
+	 * @unstable
+	 * @param lobbyId id of the lobby
+	 * @param data data to send
+	 */
+	public async sendToLobby(lobbyId: string, data: unknown) {
 		return this.#request(RPCCommands.SendToLobby, {
-			id: lobby.id || lobby,
+			id: lobbyId,
 			data,
 		});
 	}
 
-	public async disconnectFromLobby(lobby) {
+	/**
+	 * @unstable
+	 * @param lobbyId id of the lobby
+	 */
+	public async disconnectFromLobby(lobbyId: string) {
 		return this.#request(RPCCommands.DisconnectFromLobby, {
-			id: lobby.id || lobby,
+			id: lobbyId,
 		});
 	}
 
-	public async updateLobbyMember(lobby, user, metadata) {
+	/**
+	 * @unstable
+	 * @param lobbyId id of the lobby
+	 * @param userId id of the user
+	 * @param metadata metadata to update
+	 */
+	public async updateLobbyMember(lobbyId: string, userId: Snowflake, metadata: RPCLobbyMetadata) {
 		return this.#request(RPCCommands.UpdateLobbyMember, {
-			lobby_id: lobby.id || lobby,
-			user_id: user.id || user,
+			lobby_id: lobbyId,
+			user_id: userId,
 			metadata,
 		});
 	}
 
+	/**
+	 * @unstable
+	 */
 	public async getRelationships() {
 		const types = Object.keys(RelationshipType);
 		return this.#request(RPCCommands.GetRelationships).then((o) =>
@@ -692,7 +695,7 @@ export class RPCClient extends AsyncEventEmitter {
 	 * @param event - Name of event e.g. `MESSAGE_CREATE`
 	 * @param args - Args for event e.g. `{ channel_id: '1234' }`
 	 */
-	public async subscribe(event: string, args: object): Promise<object> {
+	public async subscribe(event: RPCEvents, args: object): Promise<object> {
 		await this.#request(RPCCommands.Subscribe, args, event);
 		return {
 			unsubscribe: async () => this.#request(RPCCommands.Unsubscribe, args, event),

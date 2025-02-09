@@ -16,6 +16,11 @@ import type {
 export const RPCVersion = '1';
 
 /**
+ * @unstable
+ */
+export type RPCLobbyMetadata = unknown;
+
+/**
  * https://discord.com/developers/docs/topics/rpc#authenticate-oauth2-application-structure
  */
 export interface RPCOAuth2Application {
@@ -69,7 +74,7 @@ export enum RPCDeviceType {
 	VideoInput = 'videoinput',
 }
 
-export interface BaseRPCDevice<Type extends RPCDeviceType> {
+export interface BaseRPCCertifiedDevice<Type extends RPCDeviceType> {
 	/**
 	 * the device's Windows UUID
 	 */
@@ -95,8 +100,8 @@ export interface BaseRPCDevice<Type extends RPCDeviceType> {
 /**
  * https://discord.com/developers/docs/topics/rpc#setcertifieddevices-device-object
  */
-export type RPCDevice<Type extends RPCDeviceType = RPCDeviceType> = Type extends RPCDeviceType.AudioInput
-	? BaseRPCDevice<Type> & {
+export type RPCCertifiedDevice<Type extends RPCDeviceType = RPCDeviceType> = Type extends RPCDeviceType.AudioInput
+	? BaseRPCCertifiedDevice<Type> & {
 			/**
 			 * if the device's native automatic gain control is enabled
 			 */
@@ -114,7 +119,7 @@ export type RPCDevice<Type extends RPCDeviceType = RPCDeviceType> = Type extends
 			 */
 			noise_suppression: boolean;
 		}
-	: BaseRPCDevice<Type>;
+	: BaseRPCCertifiedDevice<Type>;
 
 export interface RPCVoiceAvailableDevice {
 	/**
@@ -1051,7 +1056,10 @@ export interface RPCSetActivityArgs {
 	/**
 	 * the rich presence to assign to the user
 	 */
-	activity?: Omit<GatewayActivity, 'name' | 'type' | 'url'>;
+	activity?: Partial<
+		Omit<GatewayActivity, 'name' | 'type' | 'url' | 'id' | 'created_at' | 'timestamps'> &
+			Partial<Pick<GatewayActivity, 'timestamps'>>
+	>;
 	/**
 	 * the application's process id
 	 */
@@ -1484,7 +1492,7 @@ export interface RPCSetCertifiedDevicesArgs {
 	/**
 	 * a list of devices for your manufacturer, in order of priority
 	 */
-	devices: RPCDevice[];
+	devices: RPCCertifiedDevice[];
 }
 
 /**
@@ -1539,7 +1547,28 @@ export interface RPCUpdateLobbyResultData {}
 /**
  * @unstable
  */
-export interface RPCUpdateLobbyArgs {}
+export interface RPCUpdateLobbyArgs {
+	/**
+	 * id of the lobby to update
+	 */
+	id: Snowflake;
+	/**
+	 * lobby type
+	 */
+	type: LobbyType;
+	/**
+	 * id of the owner of the lobby
+	 */
+	owner_id: Snowflake;
+	/**
+	 * capacity of the lobby
+	 */
+	capacity: number;
+	/**
+	 * metadata for the lobby
+	 */
+	metadata: RPCLobbyMetadata;
+}
 
 /**
  * @unstable
@@ -3418,6 +3447,12 @@ export type RPCMessagePayload =
 	| RPCCommandValidateApplicationPayload;
 
 // TODO: get rid of all types above as they will be within discord-api-types soon
+
+export enum Events {
+	Ready = 'ready',
+	Connected = 'connected',
+	Disconnected = 'disconnected',
+}
 
 export interface MappedRPCCommandsResultsData {
 	[RPCCommands.Authorize]: RPCAuthorizeResultData;
