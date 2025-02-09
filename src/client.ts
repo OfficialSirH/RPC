@@ -13,6 +13,7 @@ import type {
 	LobbyType,
 	MappedRPCCommandsArgs,
 	MappedRPCCommandsResultsData,
+	MappedRPCEventsDispatchData,
 	NullableFields,
 	RPCCallableCommands,
 	RPCCertifiedDevice,
@@ -76,7 +77,7 @@ function subKey(event: RPCEvents, args?: RPCSubscribeArgs) {
 /**
  * The client for interacting with Discord RPC
  */
-export class RPCClient extends AsyncEventEmitter {
+export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	public options: Partial<RPCLoginOptions>;
 
 	public accessToken: string | null;
@@ -261,7 +262,7 @@ export class RPCClient extends AsyncEventEmitter {
 		redirectUri,
 		prompt,
 	}: Partial<RPCLoginOptions> = {}): Promise<string> {
-		const rest = new REST().setToken(this.accessToken!);
+		const rest = new REST();
 
 		if (clientSecret) {
 			const response = (await rest.post(`${Routes.oauth2TokenExchange()}/rpc`, {
