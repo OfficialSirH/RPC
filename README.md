@@ -17,7 +17,7 @@
 
 ### [Rich Presence Example](https://github.com/discordjs/RPC/blob/master/example)
 
-### **Browser** Example
+### Browser Example
 
 ```javascript
 const clientId = '287406016902594560';
