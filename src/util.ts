@@ -5,7 +5,7 @@ try {
 } catch {
 	try {
 		register = require('register-scheme');
-	} catch (e) {} // eslint-disable-line no-empty
+	} catch {} // eslint-disable-line no-empty
 }
 
 export function getPid() {
