@@ -13,7 +13,8 @@
 		"docs": "pnpm run build:docs && api-extractor run --local",
 		"prepack": "pnpm run build && pnpm run lint",
 		"changelog": "git cliff --prepend ./CHANGELOG.md -u -c ./cliff.toml -r ../../ --include-path 'packages/rpc/*'",
-		"release": "cliff-jumper"
+		"release": "cliff-jumper",
+		"skibidi": "tsc -p tsconfig.json && node dist/test/index.js"
 	},
 	"type": "module",
 	"exports": {
