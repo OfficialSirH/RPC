@@ -1,7 +1,6 @@
 /* eslint-disable tsdoc/syntax */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import type { Snowflake } from 'discord-api-types/globals';
 import type {
 	APIMessage,
 	APIPartialChannel,
@@ -11,6 +10,7 @@ import type {
 	ChannelType,
 	GatewayActivity,
 	OAuth2Scopes,
+	Snowflake,
 } from 'discord-api-types/v10';
 
 export const RPCVersion = '1';

@@ -4,8 +4,8 @@ import { randomUUID } from 'node:crypto';
 import { realpath } from 'node:fs/promises';
 import { createConnection, type Socket } from 'node:net';
 import process from 'node:process';
-import type { RPCClient } from './client';
-import { RPCMessagePayload } from './constants';
+import type { RPCClient } from './client.js';
+import { RPCMessagePayload } from './constants.js';
 
 enum OPCodes {
 	Handshake,

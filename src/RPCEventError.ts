@@ -1,4 +1,4 @@
-import { RPCErrorCodes, RPCErrorDispatchData } from './constants';
+import { RPCErrorCodes, RPCErrorDispatchData } from './constants.js';
 
 export class RPCEventError extends Error {
 	code?: RPCErrorCodes;

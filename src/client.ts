@@ -35,11 +35,11 @@ import type {
 	RPCSetVoiceSettingsArgs,
 	RPCSubscribeArgs,
 	RPCUpdateLobbyArgs,
-} from './constants';
-import { RPCCaptureShortcutAction, RPCCommands, RPCEvents } from './constants';
-import { IPCTransport } from './ipc';
-import { RPCEventError } from './RPCEventError';
-import { getPid } from './util';
+} from './constants.js';
+import { RPCCaptureShortcutAction, RPCCommands, RPCEvents } from './constants.js';
+import { IPCTransport } from './ipc.js';
+import { RPCEventError } from './RPCEventError.js';
+import { getPid } from './util.js';
 
 export interface RPCLoginOptions {
 	accessToken: string;

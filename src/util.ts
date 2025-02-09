@@ -1,4 +1,4 @@
-let register;
+export let register: (scheme: string) => boolean = () => false;
 try {
 	const { app } = require('electron');
 	register = app.setAsDefaultProtocolClient.bind(app);
@@ -6,10 +6,6 @@ try {
 	try {
 		register = require('register-scheme');
 	} catch (e) {} // eslint-disable-line no-empty
-}
-
-if (typeof register !== 'function') {
-	register = () => false;
 }
 
 export function getPid() {
