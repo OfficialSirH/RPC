@@ -1777,54 +1777,59 @@ export enum RPCEvents {
 /**
  * @unstable
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeActivityInviteArgs = Record<string, never>;
 
-export interface RPCSubscribeActivityInviteArgs {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeActivityJoinArgs = Record<string, never>;
 
-export interface RPCSubscribeActivityJoinArgs {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeActivityJoinRequestArgs = Record<string, never>;
 
-export interface RPCSubscribeActivityJoinRequestArgs {}
-
-export interface RPCSubscribeActivitySpectateArgs {}
-
-/**
- * @unstable
- */
-
-export interface RPCSubscribeCaptureShortcutChangeArgs {}
-
-export interface RPCSubscribeChannelCreateArgs {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeActivitySpectateArgs = Record<string, never>;
 
 /**
  * @unstable
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeCaptureShortcutChangeArgs = Record<string, never>;
 
-export interface RPCSubscribeCurrentUserUpdateArgs {}
-
-/**
- * @unstable
- */
-
-export interface RPCSubscribeEntitlementCreateArgs {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeChannelCreateArgs = Record<string, never>;
 
 /**
  * @unstable
  */
-
-export interface RPCSubscribeEntitlementDeleteArgs {}
-
-/**
- * @unstable
- */
-
-export interface RPCSubscribeGameJoinArgs {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeCurrentUserUpdateArgs = Record<string, never>;
 
 /**
  * @unstable
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeEntitlementCreateArgs = Record<string, never>;
 
-export interface RPCSubscribeGameSpectateArgs {}
+/**
+ * @unstable
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeEntitlementDeleteArgs = Record<string, never>;
 
-export interface RPCSubscribeGuildCreateArgs {}
+/**
+ * @unstable
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeGameJoinArgs = Record<string, never>;
+
+/**
+ * @unstable
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeGameSpectateArgs = Record<string, never>;
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeGuildCreateArgs = Record<string, never>;
 
 /**
  * https://discord.com/developers/docs/topics/rpc#guildstatus-guild-status-argument-structure
@@ -1839,38 +1844,38 @@ export interface RPCSubscribeGuildStatusArgs {
 /**
  * @unstable
  */
-
-export interface RPCSubscribeLobbyDeleteArgs {}
-
-/**
- * @unstable
- */
-
-export interface RPCSubscribeLobbyMemberConnectArgs {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeLobbyDeleteArgs = Record<string, never>;
 
 /**
  * @unstable
  */
-
-export interface RPCSubscribeLobbyMemberDisconnectArgs {}
-
-/**
- * @unstable
- */
-
-export interface RPCSubscribeLobbyMemberUpdateArgs {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeLobbyMemberConnectArgs = Record<string, never>;
 
 /**
  * @unstable
  */
-
-export interface RPCSubscribeLobbyMessageArgs {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeLobbyMemberDisconnectArgs = Record<string, never>;
 
 /**
  * @unstable
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeLobbyMemberUpdateArgs = Record<string, never>;
 
-export interface RPCSubscribeLobbyUpdateArgs {}
+/**
+ * @unstable
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeLobbyMessageArgs = Record<string, never>;
+
+/**
+ * @unstable
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeLobbyUpdateArgs = Record<string, never>;
 
 /**
  * https://discord.com/developers/docs/topics/rpc#messagecreatemessageupdatemessagedelete-message-argument-structure
@@ -1902,25 +1907,26 @@ export interface RPCSubscribeMessageUpdateArgs {
 	channel_id: Snowflake;
 }
 
-export interface RPCSubscribeNotificationCreateArgs {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeNotificationCreateArgs = Record<string, never>;
 
 /**
  * @unstable
  */
-
-export interface RPCSubscribeOverlayArgs {}
-
-/**
- * @unstable
- */
-
-export interface RPCSubscribeOverlayUpdateArgs {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeOverlayArgs = Record<string, never>;
 
 /**
  * @unstable
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeOverlayUpdateArgs = Record<string, never>;
 
-export interface RPCSubscribeRelationshipUpdateArgs {}
+/**
+ * @unstable
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeRelationshipUpdateArgs = Record<string, never>;
 
 /**
  * https://discord.com/developers/docs/topics/rpc#speakingstartspeakingstop-speaking-argument-structure
@@ -1945,24 +1951,26 @@ export interface RPCSubscribeSpeakingStopArgs {
 /**
  * @unstable
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeUserAchievementUpdateArgs = Record<string, never>;
 
-export interface RPCSubscribeUserAchievementUpdateArgs {}
-
-export interface RPCSubscribeVoiceChannelSelectArgs {}
-
-/**
- * @unstable
- */
-
-export interface RPCSubscribeVoiceConnectionStatusArgs {}
-
-export interface RPCSubscribeVoiceSettingsUpdateArgs {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeVoiceChannelSelectArgs = Record<string, never>;
 
 /**
  * @unstable
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeVoiceConnectionStatusArgs = Record<string, never>;
 
-export interface RPCSubscribeVoiceSettingsUpdate2Args {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeVoiceSettingsUpdateArgs = Record<string, never>;
+
+/**
+ * @unstable
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export type RPCSubscribeVoiceSettingsUpdate2Args = Record<string, never>;
 
 /**
  * https://discord.com/developers/docs/topics/rpc#voicestatecreatevoicestateupdatevoicestatedelete-voice-state-argument-structure
@@ -3664,6 +3672,8 @@ export interface MappedRPCCommandsArgs {
 export type RPCCallableCommands = Exclude<RPCCommands, RPCCommands.Dispatch>;
 
 export interface MappedRPCSubscribeEventsArgs {
+	[RPCEvents.Ready]: Record<string, never>;
+	[RPCEvents.Error]: Record<string, never>;
 	[RPCEvents.ActivityInvite]: RPCSubscribeActivityInviteArgs;
 	[RPCEvents.ActivityJoin]: RPCSubscribeActivityJoinArgs;
 	[RPCEvents.ActivityJoinRequest]: RPCSubscribeActivityJoinRequestArgs;
@@ -3742,6 +3752,9 @@ export interface MappedRPCEventsDispatchData {
 	[RPCEvents.VoiceStateDelete]: [RPCVoiceStateDeleteDispatchData];
 	[RPCEvents.VoiceStateUpdate]: [RPCVoiceStateUpdateDispatchData];
 }
+
+export type EventAndArgsParameters<Evt extends RPCEvents> =
+	MappedRPCSubscribeEventsArgs[Evt] extends Record<string, never> ? [Evt] : [Evt, MappedRPCSubscribeEventsArgs[Evt]];
 
 export type Nullable<T> = T | null | undefined;
 

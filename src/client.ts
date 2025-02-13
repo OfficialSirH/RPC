@@ -10,6 +10,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { clearTimeout, setTimeout } from 'node:timers';
 import type {
+	EventAndArgsParameters,
 	LobbyType,
 	MappedRPCCommandsArgs,
 	MappedRPCCommandsResultsData,
@@ -642,8 +643,7 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	 * @param args - Args for event e.g. `{ channel_id: '1234' }`
 	 */
 	public async subscribe<Evt extends RPCEvents>(
-		event: Evt,
-		args?: RPCSubscribeArgs,
+		...[event, args]: EventAndArgsParameters<Evt>
 	): Promise<{ unsubscribe: () => Promise<RPCUnsubscribeResultData> }> {
 		await this.#request(RPCCommands.Subscribe, args, event);
 		return {
