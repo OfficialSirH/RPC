@@ -1,3 +1,5 @@
+import { RPCLoginOptions } from './client';
+
 export let register: (scheme: string) => boolean = () => false;
 try {
 	const { app } = require('electron');
@@ -14,4 +16,18 @@ export function getPid() {
 	}
 
 	return null;
+}
+
+export function mergeRPCLoginOptions(
+	options: Partial<RPCLoginOptions>,
+	otheroptions: Partial<RPCLoginOptions>,
+): RPCLoginOptions {
+	return {
+		clientId: options.clientId! ?? otheroptions.clientId!,
+		scopes: options.scopes! ?? otheroptions.scopes!,
+		clientSecret: options.clientSecret! ?? otheroptions.clientSecret!,
+		redirectUri: options.redirectUri! ?? otheroptions.redirectUri!,
+		accessToken: options.accessToken! ?? otheroptions.accessToken!,
+		username: options.username! ?? otheroptions.username!,
+	};
 }

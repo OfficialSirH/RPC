@@ -18,6 +18,56 @@ export const RPCVersion = '1';
 /**
  * @unstable
  */
+export interface RPCAPIMessageParsedContentOriginalMatch {
+	0: string;
+	index: 0;
+}
+
+/**
+ * @unstable
+ */
+export interface RPCAPIMessageParsedContentText {
+	type: 'text';
+	originalMatch: RPCAPIMessageParsedContentOriginalMatch;
+	content: string;
+}
+
+/**
+ * @unstable
+ */
+export interface RPCAPIMessageParsedContentMention {
+	type: 'mention';
+	userId: Snowflake;
+	channelId: Snowflake;
+	guildId: Snowflake;
+	/**
+	 * same as `userId`
+	 */
+	parsedUserId: Snowflake;
+	content: Omit<RPCAPIMessageParsedContentText, 'originalMatch'>;
+}
+
+/**
+ * @unstable
+ */
+export interface RPCAPIMessage extends Omit<APIMessage, 'channel_id'> {
+	/**
+	 * the nickname of the user who sent the message
+	 */
+	nick?: string;
+	/**
+	 * the color of the author's name
+	 */
+	author_color?: number;
+	/**
+	 * the content of the message parsed into an array
+	 */
+	content_parsed: (RPCAPIMessageParsedContentText | RPCAPIMessageParsedContentMention)[];
+}
+
+/**
+ * @unstable
+ */
 export enum RPCCaptureShortcutAction {
 	Start = 'START',
 	Stop = 'STOP',
@@ -746,15 +796,6 @@ export interface RPCAuthorizeArgs {
 	 */
 	client_id: string;
 	/**
-	 * one-time use RPC token
-	 */
-	rpc_token: string;
-	/**
-	 * @unstable Authorize Arguments doesn't document this field
-	 * https://discord.com/developers/docs/topics/oauth2#authorization-code-grant
-	 */
-	prompt?: 'consent' | 'none';
-	/**
 	 * scopes to authorize
 	 */
 	scopes: OAuth2Scopes[];
@@ -1088,8 +1129,7 @@ export interface RPCSetActivityArgs {
 	 * the rich presence to assign to the user
 	 */
 	activity?: Partial<
-		Omit<GatewayActivity, 'name' | 'type' | 'url' | 'id' | 'created_at' | 'timestamps'> &
-			Partial<Pick<GatewayActivity, 'timestamps'>>
+		Omit<GatewayActivity, 'id' | 'created_at' | 'timestamps'> & Partial<Pick<GatewayActivity, 'timestamps'>>
 	>;
 	/**
 	 * the application's process id
@@ -2132,7 +2172,7 @@ export interface RPCMessageCreateDispatchData {
 	/**
 	 * 	message that was created
 	 */
-	message: APIMessage;
+	message: RPCAPIMessage;
 }
 
 /**
@@ -3487,8 +3527,7 @@ export type RPCMessagePayload =
 // TODO: get rid of all types above as they will be within discord-api-types soon
 
 export enum Events {
-	Ready = 'ready',
-	Connected = 'connected',
+	ApplicationReady = 'ready',
 	Disconnected = 'disconnected',
 }
 

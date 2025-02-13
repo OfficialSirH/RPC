@@ -1,6 +1,8 @@
 import { AsyncEventEmitter } from '@vladfrangu/async_event_emitter';
 import {
 	RESTPostOAuth2AccessTokenResult,
+	RESTPostOAuth2AccessTokenURLEncodedData,
+	Routes,
 	type APIUser,
 	type OAuth2Scopes,
 	type Snowflake,
@@ -37,10 +39,10 @@ import type {
 	RPCUnsubscribeResultData,
 	RPCUpdateLobbyArgs,
 } from './constants.js';
-import { RPCCaptureShortcutAction, RPCCommands, RPCEvents } from './constants.js';
+import { Events, RPCCaptureShortcutAction, RPCCommands, RPCEvents } from './constants.js';
 import { IPCTransport } from './ipc.js';
 import { RPCEventError } from './RPCEventError.js';
-import { getPid } from './util.js';
+import { getPid, mergeRPCLoginOptions } from './util.js';
 
 export interface RPCLoginOptions {
 	accessToken: string;
@@ -58,16 +60,8 @@ export interface RPCLoginOptions {
 	 * for authorization requests
 	 */
 	redirectUri?: string;
-	rpcToken: string;
 	scopes: OAuth2Scopes[];
-	tokenEndpoint: string;
 	username: string;
-}
-
-export interface RPCAuthorizationOptions extends Partial<RPCLoginOptions> {}
-
-export interface Oauth2RPCTokenExchangeResult {
-	rpc_token: string;
 }
 
 function subKey(event: RPCEvents, args?: RPCSubscribeArgs) {
@@ -136,7 +130,7 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 		this.clientId = clientId;
 		const timeout = setTimeout(() => reject(new Error('RPC_CONNECTION_TIMEOUT')), 10e3);
 		timeout.unref();
-		this.once('connected', () => {
+		this.once(RPCEvents.Ready, () => {
 			clearTimeout(timeout);
 			resolve(this);
 		});
@@ -146,7 +140,7 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 				exp_nonce.reject(new RPCEventError('connection closed'));
 			}
 
-			this.emit('disconnected');
+			this.emit(Events.Disconnected);
 			reject(new Error('connection closed'));
 		});
 
@@ -163,7 +157,6 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	 * Performs authentication flow. Automatically calls Client#connect if needed.
 	 *
 	 * @param options - Options for authentication.
-	 * At least one property must be provided to perform login.
 	 * @example
 	 * logging in with a client id and secret
 	 * ```ts
@@ -171,23 +164,24 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	 * ```
 	 */
 	public async login(options: Partial<RPCLoginOptions> = {}): Promise<RPCClient> {
-		const { clientId } = options ?? this.options;
+		const finalizedOptions = mergeRPCLoginOptions(options, this.options);
+		const { clientId } = finalizedOptions;
 		if (!clientId) {
 			throw new Error('A client id must be provided to login');
 		}
 
 		await this.connect(clientId);
 
-		if (!options.scopes) {
-			this.emit('ready');
+		const { scopes } = finalizedOptions;
+		if (!scopes) {
+			this.emit(Events.ApplicationReady);
 			return this;
 		}
 
-		let { accessToken } = options ?? this.options;
+		let { accessToken } = finalizedOptions;
 		if (!accessToken) {
-			accessToken = await this.authorize(options);
+			accessToken = await this.authorize(finalizedOptions);
 		}
-
 		return this.authenticate(accessToken!);
 	}
 
@@ -231,7 +225,7 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 				this.user = message.data.user;
 			}
 
-			this.emit('connected');
+			this.emit(RPCEvents.Ready, message.data);
 		} else if (message.cmd !== RPCCommands.Dispatch) {
 			if (!this.#expected_nonces.has(message.nonce)) {
 				return;
@@ -257,57 +251,32 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	 */
 	private async authorize({
 		scopes,
+		clientId,
 		clientSecret,
-		rpcToken,
 		redirectUri,
-		prompt,
 	}: Partial<RPCLoginOptions> = {}): Promise<string> {
-		// TODO: lol, fix authorization issues
-		// const rest = new REST();
-
-		if (clientSecret) {
-			// const response = (await rest.post(`${Routes.oauth2TokenExchange()}/rpc`, {
-			// 	body: new URLSearchParams({
-			// 		client_id: this.clientId!,
-			// 		client_secret: clientSecret,
-			// 	}),
-			// })) as Oauth2RPCTokenExchangeResult;
-			const response = (await fetch(`https://discord.com/api/oauth2/token/rpc`, {
-				method: 'POST',
-				body: new URLSearchParams({
-					client_id: this.clientId!,
-					client_secret: clientSecret,
-				}),
-			}).then((res) => res.json())) as Oauth2RPCTokenExchangeResult;
-			rpcToken = response.rpc_token;
-		}
-
 		const { code } = await this.#request(RPCCommands.Authorize, {
 			scopes: scopes!,
-			client_id: this.clientId!,
-			prompt: prompt!,
-			rpc_token: rpcToken!,
+			client_id: clientId!,
 		});
 
-		// const response = (await rest.post(Routes.oauth2TokenExchange(), {
-		// 	body: new URLSearchParams({
-		// 		client_id: this.clientId!,
-		// 		client_secret: clientSecret!,
-		// 		code,
-		// 		grant_type: 'authorization_code',
-		// 		redirect_uri: redirectUri!,
-		// 	}),
-		// })) as RESTPostOAuth2AccessTokenResult;
-		const response = (await fetch(`https://discord.com/api/oauth2/token`, {
+		const response = (await fetch(`https://discord.com/api${Routes.oauth2TokenExchange()}`, {
 			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
 			body: new URLSearchParams({
 				client_id: this.clientId!,
 				client_secret: clientSecret!,
 				code,
 				grant_type: 'authorization_code',
 				redirect_uri: redirectUri!,
-			}),
+			} satisfies RESTPostOAuth2AccessTokenURLEncodedData),
 		}).then((res) => res.json())) as RESTPostOAuth2AccessTokenResult;
+
+		if (!('access_token' in response)) {
+			throw new Error(response);
+		}
 
 		return response.access_token;
 	}
@@ -323,7 +292,7 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 			this.accessToken = accessToken;
 			this.application = application;
 			this.user = user;
-			this.emit('ready');
+			this.emit(Events.ApplicationReady);
 			return this;
 		});
 	}
