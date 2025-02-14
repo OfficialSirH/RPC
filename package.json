@@ -57,7 +57,6 @@
 	"homepage": "https://discord.js.org",
 	"funding": "https://github.com/discordjs/RPC?sponsor",
 	"dependencies": {
-		"@discordjs/rest": "^2.4.2",
 		"@vladfrangu/async_event_emitter": "^2.4.6",
 		"discord-api-types": "^0.37.117"
 	},
