@@ -11,19 +11,19 @@ import { randomUUID } from 'node:crypto';
 import { clearTimeout, setTimeout } from 'node:timers';
 import type {
 	EventAndArgsParameters,
-	LobbyType,
 	MappedRPCCommandsArgs,
 	MappedRPCCommandsResultsData,
 	MappedRPCEventsDispatchData,
 	NullableFields,
 	RPCCallableCommands,
 	RPCCertifiedDevice,
+	RPCConnectToLobbyArgs,
+	RPCCreateLobbyArgs,
 	RPCGetChannelResultData,
 	RPCGetChannelsResultData,
 	RPCGetGuildResultData,
 	RPCGetGuildsResultData,
 	RPCGetVoiceSettingsResultData,
-	RPCLobbyMetadata,
 	RPCMessage,
 	RPCMessagePayload,
 	RPCOAuth2Application,
@@ -31,16 +31,17 @@ import type {
 	RPCSelectTextChannelResultData,
 	RPCSelectVoiceChannelArgs,
 	RPCSelectVoiceChannelResultData,
+	RPCSendToLobbyArgs,
 	RPCSetActivityArgs,
 	RPCSetCertifiedDevicesResultData,
 	RPCSetUserVoiceSettingsArgs,
 	RPCSetUserVoiceSettingsResultData,
 	RPCSetVoiceSettingsArgs,
-	RPCSubscribeArgs,
 	RPCUnsubscribeResultData,
 	RPCUpdateLobbyArgs,
+	RPCUpdateLobbyMemberArgs,
 } from './constants.js';
-import { Events, RPCCaptureShortcutAction, RPCCommands, RPCEvents } from './constants.js';
+import { Events, RPCCommands, RPCEvents } from './constants.js';
 import { IPCTransport } from './ipc.js';
 import { RPCEventError } from './RPCEventError.js';
 import { getPid, mergeRPCLoginOptions } from './util.js';
@@ -63,10 +64,6 @@ export interface RPCLoginOptions {
 	redirectUri?: string;
 	scopes: OAuth2Scopes[];
 	username: string;
-}
-
-function subKey(event: RPCEvents, args?: RPCSubscribeArgs) {
-	return `${event}${JSON.stringify(args)}`;
 }
 
 /**
@@ -97,8 +94,6 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	 * Promise for connection
 	 */
 	#connectPromise: Promise<RPCClient> | undefined;
-
-	#subscriptions: Map<string, Function> = new Map();
 
 	public constructor(options: Partial<RPCLoginOptions> = {}) {
 		super();
@@ -423,29 +418,6 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	}
 
 	/**
-	 * @unstable
-	 * Capture a shortcut using the client
-	 * The callback takes (key, stop) where `stop` is a function that will stop capturing.
-	 * This `stop` function must be called before disconnecting or else the user will have
-	 * to restart their client.
-	 *
-	 * @param {Function} callback Callback handling keys
-	 * @returns {Promise<Function>}
-	 */
-	async captureShortcut(callback: Function): Promise<Function> {
-		const subid = subKey(RPCEvents.CaptureShortcutChange);
-		const stop = async () => {
-			this.#subscriptions.delete(subid);
-			return this.#request(RPCCommands.CaptureShortcut, { action: RPCCaptureShortcutAction.Stop });
-		};
-
-		this.#subscriptions.set(subid, ({ shortcut }: { shortcut: unknown }) => {
-			callback(shortcut, stop);
-		});
-		return this.#request(RPCCommands.CaptureShortcut, { action: RPCCaptureShortcutAction.Start }).then(() => stop);
-	}
-
-	/**
 	 * Sets the presence for the logged in user.
 	 *
 	 * @param args The rich presence to pass.
@@ -537,34 +509,26 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 
 	/**
 	 * @unstable
-	 * @param type
-	 * @param capacity
-	 * @param metadata
+	 * @param type lobby type
+	 * @param capacity max capacity of the lobby
+	 * @param metadata metadata of the lobby
 	 * @returns
 	 */
-	public async createLobby(type: LobbyType, capacity: number, metadata: RPCLobbyMetadata) {
-		return this.#request(RPCCommands.CreateLobby, {
-			type,
-			capacity,
-			metadata,
-		});
+	public async createLobby(createLobbyArgs: RPCCreateLobbyArgs) {
+		return this.#request(RPCCommands.CreateLobby, createLobbyArgs);
 	}
 
 	/**
 	 * @unstable
-	 * @param id lobby id
 	 * @param updateLobbyArgs arguments to update the lobby
 	 * @returns
 	 */
-	public async updateLobby(
-		id: string,
-		{ type, owner_id, capacity, metadata }: Omit<RPCUpdateLobbyArgs, 'id'> = {} as RPCUpdateLobbyArgs,
-	) {
+	public async updateLobby({ id, type, owner_id, capacity, metadata }: RPCUpdateLobbyArgs = {} as RPCUpdateLobbyArgs) {
 		return this.#request(RPCCommands.UpdateLobby, {
 			id,
-			type,
-			owner_id,
-			capacity,
+			type: type!,
+			owner_id: owner_id!,
+			capacity: capacity!,
 			metadata,
 		});
 	}
@@ -586,11 +550,8 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	 * @param secret secret to access the lobby
 	 * @returns connected lobby
 	 */
-	public async connectToLobby(id: string, secret: string) {
-		return this.#request(RPCCommands.ConnectToLobby, {
-			id,
-			secret,
-		});
+	public async connectToLobby(connectToLobbyArgs: RPCConnectToLobbyArgs) {
+		return this.#request(RPCCommands.ConnectToLobby, connectToLobbyArgs);
 	}
 
 	/**
@@ -598,11 +559,8 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	 * @param lobbyId id of the lobby
 	 * @param data data to send
 	 */
-	public async sendToLobby(lobbyId: string, data: unknown) {
-		return this.#request(RPCCommands.SendToLobby, {
-			id: lobbyId,
-			data,
-		});
+	public async sendToLobby(sendToLobbyArgs: RPCSendToLobbyArgs) {
+		return this.#request(RPCCommands.SendToLobby, sendToLobbyArgs);
 	}
 
 	/**
@@ -617,20 +575,15 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 
 	/**
 	 * @unstable
-	 * @param lobbyId id of the lobby
-	 * @param userId id of the user
 	 * @param metadata metadata to update
 	 */
-	public async updateLobbyMember(lobbyId: string, userId: Snowflake, metadata: RPCLobbyMetadata) {
-		return this.#request(RPCCommands.UpdateLobbyMember, {
-			lobby_id: lobbyId,
-			user_id: userId,
-			metadata,
-		});
+	public async updateLobbyMember(updateLobbyMemberArgs: RPCUpdateLobbyMemberArgs) {
+		return this.#request(RPCCommands.UpdateLobbyMember, updateLobbyMemberArgs);
 	}
 
 	/**
 	 * @unstable
+	 * requires `relationships.read` scope
 	 */
 	public async getRelationships() {
 		return this.#request(RPCCommands.GetRelationships);

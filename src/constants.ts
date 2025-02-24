@@ -275,6 +275,14 @@ export interface RPCVoiceSettingsMode {
 	 * voice setting mode type (can be `PUSH_TO_TALK` or `VOICE_ACTIVITY`)
 	 */
 	type: RPCVoiceSettingsModeType;
+	/**
+	 * shortcut key combos for PTT
+	 */
+	shortcut: RPCVoiceShortcutKeyCombo;
+	/**
+	 * the PTT release delay (in ms) (min: 0, max: 2000)
+	 */
+	delay: number;
 }
 
 export enum VoiceConnectionStates {
@@ -1277,7 +1285,16 @@ export interface RPCConnectToLobbyResultData {}
 /**
  * @unstable
  */
-export interface RPCConnectToLobbyArgs {}
+export interface RPCConnectToLobbyArgs {
+	/**
+	 * @unstable id of the lobby to connect to
+	 */
+	id: Snowflake;
+	/**
+	 * @unstable secret for the lobby
+	 */
+	secret: string;
+}
 
 /**
  * @unstable
@@ -1555,7 +1572,16 @@ export interface RPCSendToLobbyResultData {}
 /**
  * @unstable
  */
-export interface RPCSendToLobbyArgs {}
+export interface RPCSendToLobbyArgs {
+	/**
+	 * @unstable id of the lobby to send to
+	 */
+	id: Snowflake;
+	/**
+	 * @unstable data to send
+	 */
+	data: unknown;
+}
 
 export type RPCSetCertifiedDevicesResultData = null;
 /**
@@ -1628,19 +1654,19 @@ export interface RPCUpdateLobbyArgs {
 	/**
 	 * lobby type
 	 */
-	type: LobbyType;
+	type?: LobbyType;
 	/**
 	 * id of the owner of the lobby
 	 */
-	owner_id: Snowflake;
+	owner_id?: Snowflake;
 	/**
 	 * capacity of the lobby
 	 */
-	capacity: number;
+	capacity?: number;
 	/**
 	 * metadata for the lobby
 	 */
-	metadata: RPCLobbyMetadata;
+	metadata?: RPCLobbyMetadata;
 }
 
 /**
@@ -1650,7 +1676,20 @@ export interface RPCUpdateLobbyMemberResultData {}
 /**
  * @unstable
  */
-export interface RPCUpdateLobbyMemberArgs {}
+export interface RPCUpdateLobbyMemberArgs {
+	/**
+	 * @unstable id of the lobby the member is from
+	 */
+	lobby_id: Snowflake;
+	/**
+	 * @unstable id of the member to update
+	 */
+	user_id: Snowflake;
+	/**
+	 * @unstable metadata for the member
+	 */
+	metadata?: RPCLobbyMetadata;
+}
 
 /**
  * @unstable
@@ -1672,10 +1711,6 @@ export enum RPCEvents {
 	ActivityJoin = 'ACTIVITY_JOIN',
 	ActivityJoinRequest = 'ACTIVITY_JOIN_REQUEST',
 	ActivitySpectate = 'ACTIVITY_SPECTATE',
-	/**
-	 * @unstable
-	 */
-	CaptureShortcutChange = 'CAPTURE_SHORTCUT_CHANGE',
 	ChannelCreate = 'CHANNEL_CREATE',
 	CurrentUserUpdate = 'CURRENT_USER_UPDATE',
 	/**
@@ -2039,17 +2074,6 @@ export interface RPCActivitySpectateDispatchData {
 }
 
 /**
- * @unstable
- */
-
-export interface RPCCaptureShortcutChangeDispatchData {
-	/**
-	 * the shortcut the user has pressed
-	 */
-	shortcut: string;
-}
-
-/**
  * https://discord.com/developers/docs/topics/rpc#channelcreate-channel-create-dispatch-data-structure
  */
 export interface RPCChannelCreateDispatchData {
@@ -2071,7 +2095,7 @@ export interface RPCChannelCreateDispatchData {
  * @unstable
  */
 
-export interface RPCCurrentUserUpdateDispatchData {}
+export type RPCCurrentUserUpdateDispatchData = APIUser;
 
 /**
  * @unstable
@@ -2296,6 +2320,11 @@ export interface RPCSpeakingStartDispatchData {
 	 * id of user who started speaking
 	 */
 	user_id: Snowflake;
+	/**
+	 * @unstable
+	 * id of channel where user is speaking
+	 */
+	channel_id: Snowflake;
 }
 
 /**
@@ -2306,6 +2335,11 @@ export interface RPCSpeakingStopDispatchData {
 	 * id of user who stopped speaking
 	 */
 	user_id: Snowflake;
+	/**
+	 * @unstable
+	 * id of channel where user is speaking
+	 */
+	channel_id: Snowflake;
 }
 
 /**
@@ -2518,7 +2552,6 @@ export type RPCCommandSubscribePayload =
 	| RPCSubscribeActivityJoin
 	| RPCSubscribeActivityJoinRequest
 	| RPCSubscribeActivitySpectate
-	| RPCSubscribeCaptureShortcutChange
 	| RPCSubscribeChannelCreate
 	| RPCSubscribeCurrentUserUpdate
 	| RPCSubscribeEntitlementCreate
@@ -2765,11 +2798,6 @@ export interface RPCSubscribeActivityJoinRequest extends RPCSubscribeMessage<RPC
 export interface RPCSubscribeActivitySpectate extends RPCSubscribeMessage<RPCEvents.ActivitySpectate> {
 	args: RPCSubscribeActivitySpectateArgs;
 	evt: RPCEvents.ActivitySpectate;
-}
-
-export interface RPCSubscribeCaptureShortcutChange extends RPCSubscribeMessage<RPCEvents.CaptureShortcutChange> {
-	args: RPCSubscribeCaptureShortcutChangeArgs;
-	evt: RPCEvents.CaptureShortcutChange;
 }
 
 export interface RPCSubscribeChannelCreate extends RPCSubscribeMessage<RPCEvents.ChannelCreate> {
@@ -3255,11 +3283,6 @@ export interface RPCActivitySpectateDispatch extends BaseRPCMessage<RPCCommands.
 	evt: RPCEvents.ActivitySpectate;
 }
 
-export interface RPCCaptureShortcutChangeDispatch extends BaseRPCMessage<RPCCommands.Dispatch> {
-	data: RPCCaptureShortcutChangeDispatchData;
-	evt: RPCEvents.CaptureShortcutChange;
-}
-
 export interface RPCChannelCreateDispatch extends BaseRPCMessage<RPCCommands.Dispatch> {
 	data: RPCChannelCreateDispatchData;
 	evt: RPCEvents.ChannelCreate;
@@ -3432,7 +3455,6 @@ export type RPCEventsDispatch =
 	| RPCActivityJoinDispatch
 	| RPCActivityJoinRequestDispatch
 	| RPCActivitySpectateDispatch
-	| RPCCaptureShortcutChangeDispatch
 	| RPCChannelCreateDispatch
 	| RPCCurrentUserUpdateDispatch
 	| RPCEntitlementCreateDispatch
@@ -3678,7 +3700,6 @@ export interface MappedRPCSubscribeEventsArgs {
 	[RPCEvents.ActivityJoin]: RPCSubscribeActivityJoinArgs;
 	[RPCEvents.ActivityJoinRequest]: RPCSubscribeActivityJoinRequestArgs;
 	[RPCEvents.ActivitySpectate]: RPCSubscribeActivitySpectateArgs;
-	[RPCEvents.CaptureShortcutChange]: RPCSubscribeCaptureShortcutChangeArgs;
 	[RPCEvents.ChannelCreate]: RPCSubscribeChannelCreateArgs;
 	[RPCEvents.CurrentUserUpdate]: RPCSubscribeCurrentUserUpdateArgs;
 	[RPCEvents.EntitlementCreate]: RPCSubscribeEntitlementCreateArgs;
@@ -3717,7 +3738,6 @@ export interface MappedRPCEventsDispatchData {
 	[RPCEvents.ActivityJoin]: [RPCActivityJoinDispatchData];
 	[RPCEvents.ActivityJoinRequest]: [RPCActivityJoinRequestDispatchData];
 	[RPCEvents.ActivitySpectate]: [RPCActivitySpectateDispatchData];
-	[RPCEvents.CaptureShortcutChange]: [RPCCaptureShortcutChangeDispatchData];
 	[RPCEvents.ChannelCreate]: [RPCChannelCreateDispatchData];
 	[RPCEvents.CurrentUserUpdate]: [RPCCurrentUserUpdateDispatchData];
 	[RPCEvents.EntitlementCreate]: [RPCEntitlementCreateDispatchData];
