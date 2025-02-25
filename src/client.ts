@@ -17,10 +17,12 @@ import type {
 	NullableFields,
 	RPCCallableCommands,
 	RPCCertifiedDevice,
+	RPCCreateChannelInviteResultData,
 	RPCGetChannelResultData,
 	RPCGetChannelsResultData,
 	RPCGetGuildResultData,
 	RPCGetGuildsResultData,
+	RPCGetImageArgs,
 	RPCGetVoiceSettingsResultData,
 	RPCMessage,
 	RPCMessagePayload,
@@ -327,6 +329,15 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	}
 
 	/**
+	 * Create channel invite
+	 *
+	 * @param id Channel Id
+	 */
+	async createChannelInvite(id: Snowflake): Promise<RPCCreateChannelInviteResultData> {
+		return this.#request(RPCCommands.CreateChannelInvite, { channel_id: id });
+	}
+
+	/**
 	 * Tell discord which devices are certified
 	 *
 	 * @param devices Certified devices to send to discord
@@ -496,6 +507,24 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	 */
 	public async getRelationships() {
 		return this.#request(RPCCommands.GetRelationships);
+	}
+
+	/**
+	 * Fetches a user
+	 *
+	 * @unstable
+	 */
+	public async getUser(id: Snowflake) {
+		return this.#request(RPCCommands.GetUser, { id });
+	}
+
+	/**
+	 * Fetches a user's profile picture
+	 *
+	 * @unstable
+	 */
+	public async getImage({ id, format, size }: Omit<RPCGetImageArgs, 'type'>): Promise<string> {
+		return (await this.#request(RPCCommands.GetImage, { type: 'user', id, format, size })).data_url;
 	}
 
 	/**
