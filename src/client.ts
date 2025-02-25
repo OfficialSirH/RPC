@@ -17,8 +17,6 @@ import type {
 	NullableFields,
 	RPCCallableCommands,
 	RPCCertifiedDevice,
-	RPCConnectToLobbyArgs,
-	RPCCreateLobbyArgs,
 	RPCGetChannelResultData,
 	RPCGetChannelsResultData,
 	RPCGetGuildResultData,
@@ -31,15 +29,12 @@ import type {
 	RPCSelectTextChannelResultData,
 	RPCSelectVoiceChannelArgs,
 	RPCSelectVoiceChannelResultData,
-	RPCSendToLobbyArgs,
 	RPCSetActivityArgs,
 	RPCSetCertifiedDevicesResultData,
 	RPCSetUserVoiceSettingsArgs,
 	RPCSetUserVoiceSettingsResultData,
 	RPCSetVoiceSettingsArgs,
 	RPCUnsubscribeResultData,
-	RPCUpdateLobbyArgs,
-	RPCUpdateLobbyMemberArgs,
 } from './constants.js';
 import { Events, RPCCommands, RPCEvents } from './constants.js';
 import { IPCTransport } from './ipc.js';
@@ -485,100 +480,14 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	}
 
 	/**
-	 * Request to join the game the user is playing
-	 *
-	 * @param userId The id of the user whose game you want to request to join
-	 * @returns {Promise}
-	 */
-	public async sendJoinRequest(userId: Snowflake): Promise<unknown> {
-		return this.#request(RPCCommands.SendActivityJoinRequest, {
-			user_id: userId,
-		});
-	}
-
-	/**
 	 * Reject a join request from a user
 	 *
 	 * @param userId The id of the user whose request you wish to reject
 	 */
 	public async closeJoinRequest(userId: Snowflake): Promise<unknown> {
-		return this.#request(RPCCommands.CloseActivityRequest, {
+		return this.#request(RPCCommands.CloseActivityJoinRequest, {
 			user_id: userId,
 		});
-	}
-
-	/**
-	 * @unstable
-	 * @param type lobby type
-	 * @param capacity max capacity of the lobby
-	 * @param metadata metadata of the lobby
-	 * @returns
-	 */
-	public async createLobby(createLobbyArgs: RPCCreateLobbyArgs) {
-		return this.#request(RPCCommands.CreateLobby, createLobbyArgs);
-	}
-
-	/**
-	 * @unstable
-	 * @param updateLobbyArgs arguments to update the lobby
-	 * @returns
-	 */
-	public async updateLobby({ id, type, owner_id, capacity, metadata }: RPCUpdateLobbyArgs = {} as RPCUpdateLobbyArgs) {
-		return this.#request(RPCCommands.UpdateLobby, {
-			id,
-			type: type!,
-			owner_id: owner_id!,
-			capacity: capacity!,
-			metadata,
-		});
-	}
-
-	/**
-	 * @unstable
-	 * @param id lobby id
-	 * @returns deleted lobby
-	 */
-	public async deleteLobby(id: string) {
-		return this.#request(RPCCommands.DeleteLobby, {
-			id,
-		});
-	}
-
-	/**
-	 * @unstable
-	 * @param id lobby id
-	 * @param secret secret to access the lobby
-	 * @returns connected lobby
-	 */
-	public async connectToLobby(connectToLobbyArgs: RPCConnectToLobbyArgs) {
-		return this.#request(RPCCommands.ConnectToLobby, connectToLobbyArgs);
-	}
-
-	/**
-	 * @unstable
-	 * @param lobbyId id of the lobby
-	 * @param data data to send
-	 */
-	public async sendToLobby(sendToLobbyArgs: RPCSendToLobbyArgs) {
-		return this.#request(RPCCommands.SendToLobby, sendToLobbyArgs);
-	}
-
-	/**
-	 * @unstable
-	 * @param lobbyId id of the lobby
-	 */
-	public async disconnectFromLobby(lobbyId: string) {
-		return this.#request(RPCCommands.DisconnectFromLobby, {
-			id: lobbyId,
-		});
-	}
-
-	/**
-	 * @unstable
-	 * @param metadata metadata to update
-	 */
-	public async updateLobbyMember(updateLobbyMemberArgs: RPCUpdateLobbyMemberArgs) {
-		return this.#request(RPCCommands.UpdateLobbyMember, updateLobbyMemberArgs);
 	}
 
 	/**

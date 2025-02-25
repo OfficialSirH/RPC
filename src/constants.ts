@@ -570,7 +570,7 @@ export enum RPCCommands {
 	/**
 	 * 	used to reject a Rich Presence Ask to Join request
 	 */
-	CloseActivityRequest = 'CLOSE_ACTIVITY_REQUEST',
+	CloseActivityJoinRequest = 'CLOSE_ACTIVITY_JOIN_REQUEST',
 	/**
 	 * @unstable
 	 */
@@ -724,11 +724,6 @@ export enum RPCCommands {
 	 * Used to consent to a Rich Presence Ask to Join request
 	 */
 	SendActivityJoinInvite = 'SEND_ACTIVITY_JOIN_INVITE',
-	/**
-	 * Request to join the game the user is playing
-	 * @unstable
-	 */
-	SendActivityJoinRequest = 'SEND_ACTIVITY_JOIN_REQUEST',
 	/**
 	 * @unstable
 	 */
@@ -1546,21 +1541,6 @@ export interface RPCSendActivityJoinInviteResultData {}
 export interface RPCSendActivityJoinInviteArgs {
 	/**
 	 * the id of the requesting user
-	 */
-	user_id: Snowflake;
-}
-
-/**
- * @unstable
- */
-export interface RPCSendActivityJoinRequestResultData {}
-
-/**
- * @unstable
- */
-export interface RPCSendActivityJoinRequestArgs {
-	/**
-	 * the id of the user to request to join
 	 */
 	user_id: Snowflake;
 }
@@ -2607,7 +2587,8 @@ export interface RPCCommandCaptureShortcutPayload extends RPCCommandMessage<RPCC
 	args: RPCCaptureShortcutArgs;
 }
 
-export interface RPCCommandCloseActivityJoinRequestPayload extends RPCCommandMessage<RPCCommands.CloseActivityRequest> {
+export interface RPCCommandCloseActivityJoinRequestPayload
+	extends RPCCommandMessage<RPCCommands.CloseActivityJoinRequest> {
 	args: RPCCloseActivityRequestArgs;
 }
 
@@ -3032,7 +3013,7 @@ export interface RPCCaptureShortcutResult extends RPCCommandMessage<RPCCommands.
 	data: RPCCaptureShortcutResultData;
 }
 
-export interface RPCCloseActivityRequestResult extends RPCCommandMessage<RPCCommands.CloseActivityRequest> {
+export interface RPCCloseActivityRequestResult extends RPCCommandMessage<RPCCommands.CloseActivityJoinRequest> {
 	data: RPCCloseActivityRequestResultData;
 }
 
@@ -3581,7 +3562,7 @@ export interface MappedRPCCommandsResultsData {
 	[RPCCommands.BraintreePopupBridgeCallback]: RPCBraintreePopupBridgeCallbackResultData;
 	[RPCCommands.BrowserHandoff]: RPCBrowserHandoffResultData;
 	[RPCCommands.CaptureShortcut]: RPCCaptureShortcutResultData;
-	[RPCCommands.CloseActivityRequest]: RPCCloseActivityRequestResultData;
+	[RPCCommands.CloseActivityJoinRequest]: RPCCloseActivityRequestResultData;
 	[RPCCommands.ConnectToLobby]: RPCConnectToLobbyResultData;
 	[RPCCommands.ConnectToLobbyVoice]: RPCConnectToLobbyVoiceResultData;
 	[RPCCommands.ConnectionsCallback]: RPCConnectionsCallbackResultData;
@@ -3612,7 +3593,6 @@ export interface MappedRPCCommandsResultsData {
 	[RPCCommands.Overlay]: RPCOverlayResultData;
 	[RPCCommands.SearchLobbies]: RPCSearchLobbiesResultData;
 	[RPCCommands.SendActivityJoinInvite]: RPCSendActivityJoinInviteResultData;
-	[RPCCommands.SendActivityJoinRequest]: RPCSendActivityJoinRequestResultData;
 	[RPCCommands.SendToLobby]: RPCSendToLobbyResultData;
 	[RPCCommands.SetCertifiedDevices]: RPCSetCertifiedDevicesResultData;
 	[RPCCommands.SetOverlayLocked]: RPCSetOverlayLockedResultData;
@@ -3646,7 +3626,7 @@ export interface MappedRPCCommandsArgs {
 	[RPCCommands.BraintreePopupBridgeCallback]: RPCBraintreePopupBridgeCallbackArgs;
 	[RPCCommands.BrowserHandoff]: RPCBrowserHandoffArgs;
 	[RPCCommands.CaptureShortcut]: RPCCaptureShortcutArgs;
-	[RPCCommands.CloseActivityRequest]: RPCCloseActivityRequestArgs;
+	[RPCCommands.CloseActivityJoinRequest]: RPCCloseActivityRequestArgs;
 	[RPCCommands.ConnectToLobby]: RPCConnectToLobbyArgs;
 	[RPCCommands.ConnectToLobbyVoice]: RPCConnectToLobbyVoiceArgs;
 	[RPCCommands.ConnectionsCallback]: RPCConnectionsCallbackArgs;
@@ -3677,7 +3657,6 @@ export interface MappedRPCCommandsArgs {
 	[RPCCommands.Overlay]: RPCOverlayArgs;
 	[RPCCommands.SearchLobbies]: RPCSearchLobbiesArgs;
 	[RPCCommands.SendActivityJoinInvite]: RPCSendActivityJoinInviteArgs;
-	[RPCCommands.SendActivityJoinRequest]: RPCSendActivityJoinRequestArgs;
 	[RPCCommands.SendToLobby]: RPCSendToLobbyArgs;
 	[RPCCommands.SetCertifiedDevices]: RPCSetCertifiedDevicesArgs;
 	[RPCCommands.SetOverlayLocked]: RPCSetOverlayLockedArgs;
