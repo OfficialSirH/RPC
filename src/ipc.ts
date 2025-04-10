@@ -1,11 +1,13 @@
 import { AsyncEventEmitter } from '@vladfrangu/async_event_emitter';
+import { RPCMessagePayload } from 'discord-api-types/v10';
 import { Buffer } from 'node:buffer';
 import { randomUUID } from 'node:crypto';
-import { realpath } from 'node:fs/promises';
+import { Dirent } from 'node:fs';
+import { readdir, realpath } from 'node:fs/promises';
 import { createConnection, type Socket } from 'node:net';
+import { resolve } from 'node:path';
 import process from 'node:process';
 import type { RPCClient } from './client.js';
-import { RPCMessagePayload } from './constants.js';
 
 enum OPCodes {
 	Handshake,
@@ -20,15 +22,62 @@ interface HandshakePayload {
 	client_id: string;
 }
 
+function isDiscordIPCDirectory(rootParent: string, parent: string, directory: string) {
+	if (parent !== rootParent) {
+		return true;
+	}
+	for (const prefix in ['snap.', '.flatpak']) {
+		if (directory.startsWith(prefix)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function discordIpcFilePredicate(entry: Dirent): boolean {
+	return (
+		entry.isSocket() &&
+		entry.name.startsWith('discord-ipc-') &&
+		!isNaN(parseInt(entry.name.slice('discord-ipc-'.length)))
+	);
+}
+
 async function getIPCPath(id: number) {
 	if (process.platform === 'win32') {
 		return `\\\\?\\pipe\\discord-ipc-${id}`;
 	}
 
 	const { XDG_RUNTIME_DIR, TMPDIR, TMP, TEMP } = process.env;
-	const prefix = await realpath(XDG_RUNTIME_DIR ?? TMPDIR ?? TMP ?? TEMP ?? '/tmp');
+	let tempPath = await realpath(XDG_RUNTIME_DIR ?? TMPDIR ?? TMP ?? TEMP ?? '/tmp');
 
-	return `${prefix.replace(/\/$/, '')}/discord-ipc-${id}`;
+	// iterate recursively over directories to find 'snap.' or '.flatpak' pipe
+	if (process.platform === 'linux') {
+		const directoryQueue = [];
+		let directory = await readdir(tempPath, { withFileTypes: true });
+		while (directory.length > 0) {
+			for (const entry of directory) {
+				if (entry.isDirectory()) {
+					if (entry.name === '.' || entry.name === '..') {
+						continue;
+					}
+					const dirPath = resolve(entry.parentPath, entry.name);
+					if (!isDiscordIPCDirectory(tempPath, dirPath, entry.name)) {
+						continue;
+					}
+					directoryQueue.push(dirPath);
+					continue;
+				}
+				if (discordIpcFilePredicate(entry)) {
+					return resolve(entry.parentPath, entry.name);
+				}
+			}
+			while (directory.length === 0 && directoryQueue.length > 0) {
+				directory = await readdir(directoryQueue.shift()!, { withFileTypes: true });
+			}
+		}
+	}
+
+	return `${tempPath.replace(/\/$/, '')}/discord-ipc-${id}`;
 }
 
 async function getIPC(id = 0): Promise<Socket> {

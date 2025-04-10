@@ -3,21 +3,10 @@ import {
 	RESTPostOAuth2AccessTokenResult,
 	RESTPostOAuth2AccessTokenURLEncodedData,
 	Routes,
-	type APIUser,
-	type OAuth2Scopes,
-	type Snowflake,
-} from 'discord-api-types/v10';
-import { randomUUID } from 'node:crypto';
-import { clearTimeout, setTimeout } from 'node:timers';
-import type {
-	EventAndArgsParameters,
-	MappedRPCCommandsArgs,
-	MappedRPCCommandsResultsData,
-	MappedRPCEventsDispatchData,
-	NullableFields,
-	RPCCallableCommands,
 	RPCCertifiedDevice,
+	RPCCommands,
 	RPCCreateChannelInviteResultData,
+	RPCEvents,
 	RPCGetChannelResultData,
 	RPCGetChannelsResultData,
 	RPCGetGuildResultData,
@@ -37,8 +26,21 @@ import type {
 	RPCSetUserVoiceSettingsResultData,
 	RPCSetVoiceSettingsArgs,
 	RPCUnsubscribeResultData,
+	type APIUser,
+	type OAuth2Scopes,
+	type Snowflake,
+} from 'discord-api-types/v10';
+import { randomUUID } from 'node:crypto';
+import { clearTimeout, setTimeout } from 'node:timers';
+import type {
+	EventAndArgsParameters,
+	MappedRPCCommandsArgs,
+	MappedRPCCommandsResultsData,
+	MappedRPCEventsDispatchData,
+	NullableFields,
+	RPCCallableCommands,
 } from './constants.js';
-import { Events, RPCCommands, RPCEvents } from './constants.js';
+import { Events } from './constants.js';
 import { IPCTransport } from './ipc.js';
 import { RPCEventError } from './RPCEventError.js';
 import { getPid, mergeRPCLoginOptions } from './util.js';
@@ -205,6 +207,17 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 				this.#expected_nonces.set(nonce, { resolve, reject });
 			},
 		);
+	}
+
+	/**
+	 * Request but public
+	 */
+	public request<Cmd extends RPCCallableCommands>(
+		cmd: Cmd,
+		args: MappedRPCCommandsArgs[Cmd],
+		evt?: RPCEvents,
+	): Promise<MappedRPCCommandsResultsData[Cmd]> {
+		return this.#request(cmd, args, evt);
 	}
 
 	/**

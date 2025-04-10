@@ -58,7 +58,7 @@
 	"funding": "https://github.com/discordjs/RPC?sponsor",
 	"dependencies": {
 		"@vladfrangu/async_event_emitter": "^2.4.6",
-		"discord-api-types": "^0.37.117"
+		"discord-api-types": "^0.37.120"
 	},
 	"devDependencies": {
 		"@favware/cliff-jumper": "^4.1.0",

@@ -1,4 +1,4 @@
-import { RPCErrorCodes, RPCErrorDispatchData } from './constants.js';
+import { RPCErrorCodes, RPCErrorDispatchData } from 'discord-api-types/v10';
 
 export class RPCEventError extends Error {
 	code?: RPCErrorCodes;
