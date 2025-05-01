@@ -439,19 +439,20 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 	/**
 	 * Sets the presence for the logged in user.
 	 *
-	 * @param args The rich presence to pass.
+	 * @param activity The rich presence to pass.
 	 * @param pid The application's process ID. Defaults to the executing process' PID.
 	 */
-	public async setActivity(args: RPCSetActivityArgs['activity'] = {}, pid: number | null = getPid()): Promise<unknown> {
+	public async setActivity(
+		activity: RPCSetActivityArgs['activity'] = {},
+		pid: number | null = getPid(),
+	): Promise<unknown> {
 		const newActivity: NullableFields<RPCSetActivityArgs['activity']> = {
-			details: args.details,
-			state: args.state,
-			instance: Boolean(args.instance),
-			buttons: args?.buttons,
+			...activity,
+			instance: Boolean(activity.instance),
 		};
 
-		if (args.timestamps) {
-			newActivity.timestamps = args.timestamps;
+		if (activity.timestamps) {
+			newActivity.timestamps = activity.timestamps;
 			if ('start' in newActivity.timestamps && newActivity.timestamps.start > 2_147_483_647_000) {
 				throw new RangeError('timestamps.start must fit into a unix timestamp');
 			}
@@ -461,16 +462,16 @@ export class RPCClient extends AsyncEventEmitter<MappedRPCEventsDispatchData> {
 			}
 		}
 
-		if ('assets' in args) {
-			newActivity.assets = args.assets;
+		if ('assets' in activity) {
+			newActivity.assets = activity.assets;
 		}
 
-		if ('party' in args) {
-			newActivity.party = args.party;
+		if ('party' in activity) {
+			newActivity.party = activity.party;
 		}
 
-		if ('secrets' in args) {
-			newActivity.secrets = args.secrets;
+		if ('secrets' in activity) {
+			newActivity.secrets = activity.secrets;
 		}
 
 		return this.#request(RPCCommands.SetActivity, {
